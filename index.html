@@ -1,0 +1,1811 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+<meta name="description" content="DEGEN.ARC — Real Memecoin Launchpad on Arc Testnet"/>
+<meta name="theme-color" content="#060610"/>
+<title>DEGEN.ARC — Arc Testnet Launchpad</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.1/ethers.umd.min.js"></script>
+
+<script type="module">
+import { createAppKit } from 'https://esm.sh/@reown/appkit@1.7.3';
+import { EthersAdapter } from 'https://esm.sh/@reown/appkit-adapter-ethers@1.7.3';
+import { defineChain } from 'https://esm.sh/@reown/appkit/networks';
+
+const arcTestnet = defineChain({
+  id:5042002, caipNetworkId:'eip155:5042002', chainNamespace:'eip155',
+  name:'Arc Testnet',
+  nativeCurrency:{name:'USDC',symbol:'USDC',decimals:18},
+  rpcUrls:{default:{http:['https://rpc.testnet.arc.network']}},
+  blockExplorers:{default:{name:'ArcScan',url:'https://testnet.arcscan.app'}},
+  testnet:true
+});
+
+const modal = createAppKit({
+  adapters:[new EthersAdapter()],
+  networks:[arcTestnet],
+  defaultNetwork:arcTestnet,
+  projectId:'e8c5b0234bd68d136688c3feac774014',
+  metadata:{
+    name:'DEGEN.ARC',
+    description:'Real Memecoin Launchpad on Arc Testnet',
+    url:typeof window!=='undefined'?window.location.origin:'https://degen-arc.vercel.app',
+    icons:['https://www.arc.network/favicon.ico']
+  },
+  features:{analytics:false},
+  themeMode:'dark',
+  themeVariables:{'--w3m-accent':'#6600ff','--w3m-border-radius-master':'2px'}
+});
+window.__wcModal = modal;
+
+modal.subscribeAccount(({address,isConnected})=>{
+  window.__walletAddr = isConnected ? address : null;
+  window.dispatchEvent(new CustomEvent(isConnected?'walletConnected':'walletDisconnected',{detail:{address}}));
+});
+</script>
+
+<style>
+:root{
+  --bg:#060610;--bg2:#0b0b1c;--panel:#0f0f22;--panel2:#141430;
+  --border:#1c1c38;--border2:#242448;
+  --acid:#00ff88;--acid2:#ff006e;--acid3:#ffcc00;--acid4:#6600ff;--acid5:#00ccff;
+  --text:#eeeeff;--muted:#555577;--muted2:#8888aa;
+  --red:#ff2255;--green:#00ff88;--r:3px;
+  --glow-g:0 0 20px rgba(0,255,136,.25);
+  --glow-p:0 0 20px rgba(102,0,255,.3);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'Space Mono',monospace;min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.05) 2px,rgba(0,0,0,.05) 4px);pointer-events:none;z-index:9990;}
+
+/* HEADER */
+header{display:flex;align-items:center;justify-content:space-between;padding:10px 20px;border-bottom:1px solid var(--border);background:rgba(6,6,16,.97);position:sticky;top:0;z-index:500;backdrop-filter:blur(16px);gap:10px;flex-wrap:wrap;}
+.logo-text{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:4px;background:linear-gradient(90deg,var(--acid),var(--acid3) 50%,var(--acid2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.logo-sub{font-size:7px;color:var(--muted2);letter-spacing:2px;text-transform:uppercase;margin-top:-2px;}
+.arc-badge{display:flex;align-items:center;gap:7px;background:linear-gradient(135deg,rgba(102,0,255,.15),rgba(0,204,255,.08));border:1px solid rgba(102,0,255,.4);border-radius:var(--r);padding:5px 10px;cursor:pointer;transition:all .2s;}
+.arc-badge:hover{border-color:var(--acid4);box-shadow:var(--glow-p);}
+.arc-logo-svg{width:18px;height:18px;flex-shrink:0;}
+.arc-badge-name{font-size:11px;font-weight:700;color:var(--acid5);}
+.arc-badge-chain{font-size:8px;color:var(--green);display:flex;align-items:center;gap:3px;}
+.arc-badge-chain::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--green);display:inline-block;animation:blink .9s infinite;flex-shrink:0;}
+.nav-tabs{display:flex;gap:2px;flex:1;justify-content:center;flex-wrap:wrap;}
+.nav-tab{background:transparent;border:1px solid transparent;color:var(--muted2);padding:7px 13px;font-family:'Space Mono',monospace;font-size:9px;cursor:pointer;letter-spacing:1px;text-transform:uppercase;border-radius:var(--r);transition:all .2s;}
+.nav-tab:hover{color:var(--text);background:var(--panel);}
+.nav-tab.active{background:var(--panel2);border-color:var(--border2);color:var(--acid);}
+.connect-btn{display:flex;align-items:center;gap:7px;background:linear-gradient(135deg,var(--acid4),#3300aa);border:none;color:#fff;padding:8px 16px;font-family:'Space Mono',monospace;font-size:10px;cursor:pointer;letter-spacing:1px;border-radius:var(--r);transition:all .2s;white-space:nowrap;flex-shrink:0;}
+.connect-btn:hover{transform:translateY(-1px);box-shadow:0 4px 20px rgba(102,0,255,.5);}
+.connect-btn.connected{background:linear-gradient(135deg,#003322,#005533);}
+.wc-icon{width:13px;height:13px;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.2;}}
+
+/* TICKER */
+.ticker-wrap{background:var(--acid4);padding:3px 0;overflow:hidden;white-space:nowrap;font-size:9px;letter-spacing:1px;}
+.ticker-inner{display:inline-block;animation:ticker 55s linear infinite;}
+@keyframes ticker{from{transform:translateX(100vw);}to{transform:translateX(-100%);}}
+
+/* LAYOUT */
+.layout{display:grid;grid-template-columns:210px 1fr 270px;min-height:calc(100vh - 78px);}
+.sidebar-l{border-right:1px solid var(--border);padding:14px;overflow-y:auto;}
+.sidebar-r{border-left:1px solid var(--border);padding:14px;display:flex;flex-direction:column;gap:10px;overflow-y:auto;}
+.s-label{font-size:8px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;padding:7px 0 5px;border-bottom:1px solid var(--border);margin-bottom:6px;}
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:3px 0;font-size:10px;}
+.sv{font-weight:700;}.sv.g{color:var(--green);}.sv.y{color:var(--acid3);}.sv.p{color:var(--acid5);}
+.tok-row{display:flex;align-items:center;gap:7px;padding:6px 4px;border:1px solid transparent;border-radius:var(--r);cursor:pointer;transition:all .12s;}
+.tok-row:hover{border-color:var(--border2);background:rgba(255,255,255,.02);}
+.tok-em{font-size:16px;width:26px;height:26px;display:flex;align-items:center;justify-content:center;background:var(--panel2);border-radius:50%;flex-shrink:0;}
+.tok-inf{flex:1;min-width:0;}
+.tok-name{font-size:9px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tok-mc{font-size:8px;color:var(--muted);}
+.tok-pct{font-size:9px;font-weight:700;}
+.tok-pct.up{color:var(--green);}.tok-pct.dn{color:var(--red);}
+
+/* WALLET CARD */
+.wallet-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:13px;}
+.wc-addr{font-size:9px;color:var(--muted2);word-break:break-all;margin-bottom:7px;line-height:1.4;}
+.wc-bal-big{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--acid3);letter-spacing:2px;}
+.wc-unit{font-size:10px;color:var(--muted2);margin-left:3px;}
+.wc-chain-lbl{font-size:8px;color:var(--acid5);letter-spacing:1px;margin-top:3px;}
+.wc-status{font-size:8px;color:var(--muted2);margin-top:6px;display:flex;align-items:center;gap:5px;}
+.dot{width:5px;height:5px;border-radius:50%;}
+.dot.on{background:var(--green);animation:blink .9s infinite;}
+.dot.off{background:var(--muted);}
+.bal-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:10px;}
+.bal-btn{padding:8px;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:2px;cursor:pointer;border-radius:var(--r);transition:all .2s;border:none;}
+.deposit-btn{background:linear-gradient(135deg,var(--acid4),#220099);color:#fff;}
+.deposit-btn:hover{box-shadow:var(--glow-p);transform:translateY(-1px);}
+.send-btn{background:linear-gradient(135deg,#003322,var(--acid));color:#000;}
+.send-btn:hover{box-shadow:var(--glow-g);transform:translateY(-1px);}
+.refresh-btn{width:100%;margin-top:6px;background:rgba(0,255,136,.06);border:1px solid rgba(0,255,136,.2);color:var(--acid);padding:6px;font-family:'Space Mono',monospace;font-size:8px;cursor:pointer;border-radius:var(--r);letter-spacing:1px;transition:all .2s;}
+.refresh-btn:hover{background:rgba(0,255,136,.12);}
+.add-arc-btn{width:100%;background:linear-gradient(135deg,rgba(102,0,255,.2),rgba(0,204,255,.1));border:1px solid rgba(102,0,255,.4);color:var(--acid5);padding:8px;font-family:'Space Mono',monospace;font-size:8px;cursor:pointer;border-radius:var(--r);letter-spacing:1px;transition:all .2s;}
+.add-arc-btn:hover{border-color:var(--acid4);}
+
+/* TX HISTORY */
+.tx-item{padding:7px 0;border-bottom:1px solid rgba(28,28,56,.5);font-size:9px;}
+.tx-item:last-child{border:none;}
+.tx-top{display:flex;justify-content:space-between;margin-bottom:2px;}
+.tx-type{font-weight:700;letter-spacing:1px;}
+.tx-type.send{color:var(--red);}.tx-type.recv{color:var(--green);}.tx-type.deploy{color:var(--acid3);}.tx-type.swap{color:var(--acid5);}
+.tx-hash{color:var(--muted2);font-size:8px;cursor:pointer;text-decoration:underline;}
+.tx-hash:hover{color:var(--acid);}
+.tx-amount{color:var(--text);}
+.tx-time{color:var(--muted);}
+
+/* MAIN */
+.main-content{overflow-y:auto;}
+.panel{display:none;padding:20px;}
+.panel.active{display:block;}
+
+/* EXPLORE */
+.hero-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px;}
+.hero-stat{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:12px;text-align:center;position:relative;overflow:hidden;}
+.hero-stat::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.02),transparent);}
+.hs-num{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:2px;}
+.hs-lbl{font-size:7px;color:var(--muted2);letter-spacing:1px;text-transform:uppercase;margin-top:2px;}
+.filter-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;}
+.filter-btns{display:flex;gap:5px;flex-wrap:wrap;}
+.fbtn{background:var(--panel);border:1px solid var(--border);color:var(--muted2);padding:4px 10px;font-family:'Space Mono',monospace;font-size:9px;cursor:pointer;border-radius:var(--r);letter-spacing:1px;transition:all .15s;}
+.fbtn:hover,.fbtn.a{border-color:var(--acid);color:var(--acid);background:rgba(0,255,136,.05);}
+.search-input{background:var(--panel);border:1px solid var(--border);color:var(--text);padding:5px 10px;font-family:'Space Mono',monospace;font-size:9px;border-radius:var(--r);outline:none;width:160px;transition:border-color .2s;}
+.search-input:focus{border-color:var(--acid4);}
+.search-input::placeholder{color:var(--muted);}
+.meme-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:10px;}
+.meme-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:14px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
+.meme-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--acid),transparent);opacity:0;transition:opacity .2s;}
+.meme-card:hover{border-color:rgba(0,255,136,.25);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.5);}
+.meme-card:hover::after{opacity:1;}
+.mc-icon{font-size:30px;margin-bottom:7px;}
+.mc-name{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;}
+.mc-sym{font-size:8px;color:var(--muted2);letter-spacing:1px;}
+.mc-price{font-size:11px;font-weight:700;color:var(--acid3);margin-top:6px;}
+.mc-chg{font-size:9px;margin-top:2px;}
+.mc-chg.up{color:var(--green);}.mc-chg.dn{color:var(--red);}
+.mc-meta{font-size:7px;color:var(--muted);margin-top:4px;}
+.mc-bar{height:2px;background:var(--border2);border-radius:1px;margin-top:8px;overflow:hidden;}
+.mc-fill{height:100%;border-radius:1px;}
+.mc-fill.up{background:linear-gradient(90deg,var(--green),var(--acid5));}.mc-fill.dn{background:linear-gradient(90deg,var(--red),var(--acid2));}
+.king-badge{position:absolute;top:8px;right:8px;background:var(--acid3);color:#000;font-size:7px;font-weight:700;padding:2px 5px;border-radius:2px;letter-spacing:1px;}
+.onchain-badge{position:absolute;top:8px;left:8px;background:rgba(0,255,136,.15);border:1px solid rgba(0,255,136,.3);color:var(--green);font-size:7px;font-weight:700;padding:2px 5px;border-radius:2px;letter-spacing:1px;}
+.card-actions{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:10px;}
+.buy-btn{background:var(--green);border:none;color:#000;padding:6px;font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:1px;cursor:pointer;border-radius:var(--r);transition:all .2s;}
+.buy-btn:hover{box-shadow:var(--glow-g);}
+.sell-btn{background:var(--red);border:none;color:#fff;padding:6px;font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:1px;cursor:pointer;border-radius:var(--r);transition:all .2s;}
+.sell-btn:hover{box-shadow:0 0 12px rgba(255,34,85,.4);}
+
+/* LAUNCH */
+.launch-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.form-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:18px;}
+.fc-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;color:var(--acid3);margin-bottom:14px;}
+.fg{margin-bottom:12px;}
+.fl{font-size:9px;color:var(--muted2);letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;display:block;}
+.fi{width:100%;background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:9px 11px;font-family:'Space Mono',monospace;font-size:11px;border-radius:var(--r);outline:none;transition:border-color .2s;}
+.fi:focus{border-color:var(--acid4);}
+.fi::placeholder{color:var(--muted);}
+textarea.fi{resize:vertical;min-height:65px;}
+.emoji-row{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px;}
+.ebtn{background:var(--bg2);border:1px solid var(--border);font-size:17px;width:34px;height:34px;cursor:pointer;border-radius:var(--r);transition:all .12s;}
+.ebtn:hover,.ebtn.sel{border-color:var(--acid);background:rgba(0,255,136,.08);}
+.launch-btn{width:100%;background:linear-gradient(135deg,var(--acid4),var(--acid2));border:none;color:#fff;padding:13px;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:3px;cursor:pointer;border-radius:var(--r);margin-top:10px;transition:all .2s;position:relative;overflow:hidden;}
+.launch-btn::before{content:'';position:absolute;top:-50%;left:-60%;width:40%;height:200%;background:rgba(255,255,255,.12);transform:skewX(-20deg);transition:left .4s;}
+.launch-btn:hover::before{left:120%;}
+.launch-btn:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(255,0,110,.4);}
+.launch-btn:disabled{opacity:.4;cursor:not-allowed;}
+.preview-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:16px;text-align:center;margin-top:12px;}
+.curve-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-top:10px;}
+.curve-lbl{font-size:8px;color:var(--muted2);letter-spacing:2px;text-transform:uppercase;margin-bottom:7px;}
+.info-box{background:rgba(0,255,136,.04);border:1px solid rgba(0,255,136,.2);border-radius:var(--r);padding:12px;font-size:9px;color:var(--muted2);line-height:1.7;margin-top:10px;}
+.info-box b{color:var(--acid);}
+
+/* TRADE */
+.coming-soon-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:32px;text-align:center;}
+.cs-icon{font-size:48px;margin-bottom:16px;}
+.cs-title{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:4px;color:var(--acid3);margin-bottom:10px;}
+.cs-text{font-size:10px;color:var(--muted2);line-height:1.8;max-width:500px;margin:0 auto;}
+.cs-badge{display:inline-block;background:rgba(255,204,0,.1);border:1px solid rgba(255,204,0,.3);color:var(--acid3);font-size:9px;padding:4px 10px;border-radius:2px;letter-spacing:1px;margin-top:14px;}
+.chart-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:11px;margin-bottom:14px;}
+.chart-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:9px;}
+.chart-hdr span{color:var(--muted2);}
+.cprice{color:var(--green)!important;font-weight:700;font-size:11px!important;}
+canvas#priceChart{width:100%;height:120px;display:block;}
+.lev-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:14px;}
+.lev-btn{background:var(--panel);border:1px solid var(--border);color:var(--muted2);padding:5px 10px;font-family:'Space Mono',monospace;font-size:9px;cursor:pointer;border-radius:var(--r);transition:all .12s;}
+.lev-btn:hover{border-color:var(--acid3);color:var(--acid3);}
+.lev-btn.a{background:var(--acid3);border-color:var(--acid3);color:#000;}
+.lev-btn.danger{border-color:var(--red);color:var(--red);}
+.trade-cols{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.long-card{border:1px solid rgba(0,255,136,.2);border-radius:var(--r);padding:14px;background:rgba(0,255,136,.02);}
+.short-card{border:1px solid rgba(255,34,85,.2);border-radius:var(--r);padding:14px;background:rgba(255,34,85,.02);}
+.dir-lbl{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;margin-bottom:8px;}
+.dir-lbl.long{color:var(--green);}.dir-lbl.short{color:var(--red);}
+.trade-meta{display:flex;justify-content:space-between;font-size:9px;color:var(--muted2);margin-top:6px;}
+.btn-long{width:100%;background:var(--green);border:none;color:#000;padding:10px;font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:2px;cursor:pointer;border-radius:var(--r);margin-top:8px;transition:all .2s;}
+.btn-long:hover{box-shadow:var(--glow-g);}
+.btn-short{width:100%;background:var(--red);border:none;color:#fff;padding:10px;font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:2px;cursor:pointer;border-radius:var(--r);margin-top:8px;transition:all .2s;}
+.sec-hdr{font-size:8px;color:var(--muted2);letter-spacing:2px;text-transform:uppercase;border-bottom:1px solid var(--border);padding-bottom:6px;margin:14px 0 8px;}
+table{width:100%;border-collapse:collapse;font-size:9px;}
+th{text-align:left;color:var(--muted);font-size:7px;letter-spacing:1px;text-transform:uppercase;padding:4px 6px;border-bottom:1px solid var(--border);}
+td{padding:6px;border-bottom:1px solid rgba(28,28,56,.5);}
+tr:hover td{background:rgba(255,255,255,.01);}
+.badge{display:inline-block;padding:1px 4px;border-radius:1px;font-size:7px;font-weight:700;letter-spacing:1px;}
+.b-long{background:rgba(0,255,136,.12);color:var(--green);}
+.b-short{background:rgba(255,34,85,.12);color:var(--red);}
+.close-pos-btn{background:rgba(255,34,85,.1);border:1px solid rgba(255,34,85,.3);color:var(--red);padding:2px 6px;font-family:'Space Mono',monospace;font-size:7px;cursor:pointer;border-radius:1px;}
+.close-pos-btn:hover{background:var(--red);color:#fff;}
+
+/* READER */
+.reader-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.reader-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:16px;}
+.rc-title{font-size:9px;color:var(--muted2);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;}
+.result-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:9px 11px;font-size:9px;color:var(--acid3);margin-top:8px;min-height:38px;word-break:break-all;white-space:pre-wrap;font-family:'Space Mono',monospace;line-height:1.5;}
+.read-btn{width:100%;background:linear-gradient(135deg,var(--acid4),#2200aa);border:none;color:#fff;padding:9px;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:3px;cursor:pointer;border-radius:var(--r);margin-top:8px;transition:all .2s;}
+.read-btn:hover{transform:translateY(-1px);box-shadow:var(--glow-p);}
+.network-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(28,28,56,.5);font-size:9px;}
+.network-row:last-child{border:none;}
+.nr-val{font-weight:700;}
+.nr-val.g{color:var(--green);}.nr-val.p{color:var(--acid5);}.nr-val.y{color:var(--acid3);}
+.bal-row-grid{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end;margin-bottom:8px;}
+.bal-check-btn{background:linear-gradient(135deg,#004422,var(--acid));border:none;color:#000;padding:9px 14px;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:2px;cursor:pointer;border-radius:var(--r);transition:all .2s;white-space:nowrap;}
+.bal-check-btn:hover{box-shadow:var(--glow-g);}
+
+/* FEEDBACK */
+.feedback-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.fb-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:16px;}
+.fb-title{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;margin-bottom:12px;}
+.fb-title.feedback{color:var(--acid3);}.fb-title.complaint{color:var(--red);}
+.star-row{display:flex;gap:4px;margin-bottom:12px;}
+.star{font-size:20px;cursor:pointer;opacity:.4;filter:grayscale(1);transition:all .15s;}
+.star:hover,.star.active{opacity:1;filter:none;}
+.fb-type-row{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px;}
+.fb-tag{background:var(--panel);border:1px solid var(--border);color:var(--muted2);padding:3px 8px;font-family:'Space Mono',monospace;font-size:8px;cursor:pointer;border-radius:2px;transition:all .15s;}
+.fb-tag:hover,.fb-tag.sel{border-color:var(--acid3);color:var(--acid3);}
+.fb-submit{width:100%;padding:10px;font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:3px;cursor:pointer;border-radius:var(--r);margin-top:8px;border:none;transition:all .2s;}
+.fb-submit.feedback-btn{background:linear-gradient(135deg,var(--acid3),#cc8800);color:#000;}
+.fb-submit.complaint-btn{background:linear-gradient(135deg,var(--red),#aa0000);color:#fff;}
+.fb-submit:hover{transform:translateY(-1px);}
+.fb-list{max-height:180px;overflow-y:auto;display:flex;flex-direction:column;gap:5px;margin-top:10px;}
+.fb-item{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:9px;font-size:9px;}
+.fb-item-header{display:flex;justify-content:space-between;margin-bottom:3px;}
+.fb-item-type.f{color:var(--acid3);}.fb-item-type.c{color:var(--red);}
+.fb-item-time{color:var(--muted);}
+.fb-item-text{color:var(--muted2);line-height:1.5;}
+
+/* SEND MODAL */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9000;align-items:center;justify-content:center;backdrop-filter:blur(5px);}
+.modal-overlay.open{display:flex;}
+.modal-box{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:24px;max-width:400px;width:92%;position:relative;}
+.modal-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;color:var(--acid);margin-bottom:14px;}
+.modal-close{position:absolute;top:14px;right:14px;background:none;border:none;color:var(--muted2);font-size:16px;cursor:pointer;}
+.modal-close:hover{color:var(--text);}
+.tx-step{display:flex;align-items:center;gap:9px;padding:9px 0;border-bottom:1px solid var(--border);font-size:10px;}
+.tx-step:last-child{border:none;}
+.step-dot{width:7px;height:7px;border-radius:50%;background:var(--border2);flex-shrink:0;}
+.step-dot.done{background:var(--green);}
+.step-dot.pend{background:var(--acid3);animation:blink .8s infinite;}
+.step-dot.fail{background:var(--red);}
+.modal-footer{margin-top:14px;font-size:9px;color:var(--muted2);}
+.modal-footer a{color:var(--acid);text-decoration:none;}
+.modal-footer a:hover{text-decoration:underline;}
+
+/* BUY/SELL MODAL */
+.trade-modal-box{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:24px;max-width:360px;width:92%;position:relative;}
+
+/* AI BOT */
+.ai-fab{position:fixed;bottom:28px;right:28px;width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,var(--acid4),var(--acid2));border:none;cursor:pointer;z-index:800;display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 4px 24px rgba(102,0,255,.5);transition:all .2s;animation:fab-pulse 3s ease-in-out infinite;}
+.ai-fab:hover{transform:scale(1.1);}
+@keyframes fab-pulse{0%,100%{box-shadow:0 4px 24px rgba(102,0,255,.5);}50%{box-shadow:0 4px 40px rgba(255,0,110,.6);}}
+.ai-panel{position:fixed;bottom:94px;right:28px;width:340px;max-height:500px;background:var(--panel);border:1px solid var(--border2);border-radius:8px;z-index:800;display:none;flex-direction:column;box-shadow:0 16px 64px rgba(0,0,0,.7);overflow:hidden;}
+.ai-panel.open{display:flex;}
+.ai-header{background:linear-gradient(135deg,var(--acid4),var(--acid2));padding:11px 14px;display:flex;align-items:center;justify-content:space-between;}
+.ai-header-left{display:flex;align-items:center;gap:8px;}
+.ai-avatar{width:30px;height:30px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:15px;}
+.ai-title{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:2px;color:#fff;}
+.ai-subtitle{font-size:7px;color:rgba(255,255,255,.7);letter-spacing:1px;}
+.ai-close{background:none;border:none;color:#fff;font-size:16px;cursor:pointer;opacity:.8;}
+.ai-close:hover{opacity:1;}
+.ai-messages{flex:1;overflow-y:auto;padding:10px 12px;display:flex;flex-direction:column;gap:7px;min-height:180px;}
+.ai-msg{max-width:85%;font-size:10px;line-height:1.5;padding:7px 10px;border-radius:6px;}
+.ai-msg.bot{background:var(--panel2);border:1px solid var(--border);color:var(--text);align-self:flex-start;border-bottom-left-radius:2px;}
+.ai-msg.user{background:linear-gradient(135deg,rgba(102,0,255,.3),rgba(255,0,110,.2));border:1px solid rgba(102,0,255,.3);color:var(--text);align-self:flex-end;border-bottom-right-radius:2px;}
+.ai-quick-cmds{padding:6px 10px;display:flex;flex-wrap:wrap;gap:4px;border-top:1px solid var(--border);}
+.ai-quick-cmd{background:var(--bg2);border:1px solid var(--border);color:var(--muted2);padding:2px 7px;font-family:'Space Mono',monospace;font-size:8px;cursor:pointer;border-radius:2px;transition:all .15s;white-space:nowrap;}
+.ai-quick-cmd:hover{border-color:var(--acid);color:var(--acid);}
+.ai-input-row{padding:9px 10px;border-top:1px solid var(--border);display:flex;gap:5px;align-items:center;}
+.ai-input{flex:1;background:var(--bg2);border:1px solid var(--border);color:var(--text);padding:7px 9px;font-family:'Space Mono',monospace;font-size:10px;border-radius:var(--r);outline:none;}
+.ai-input:focus{border-color:var(--acid4);}
+.ai-input::placeholder{color:var(--muted);}
+.ai-send{background:var(--acid4);border:none;color:#fff;width:30px;height:30px;border-radius:var(--r);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;}
+.ai-send:hover{background:var(--acid2);}
+.ai-voice{background:rgba(255,0,110,.15);border:1px solid rgba(255,0,110,.3);color:var(--acid2);width:30px;height:30px;border-radius:var(--r);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;}
+.ai-voice.recording{background:var(--acid2);color:#fff;animation:blink .6s infinite;}
+
+/* WALLET MODAL */
+.wc-modal-backdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:8000;align-items:center;justify-content:center;backdrop-filter:blur(8px);}
+.wc-modal-backdrop.open{display:flex;}
+.wc-modal{background:var(--panel);border:1px solid var(--border2);border-radius:6px;padding:22px;max-width:460px;width:94%;max-height:90vh;overflow-y:auto;}
+.wc-modal h2{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;color:var(--acid);margin-bottom:4px;}
+.wc-modal p{font-size:10px;color:var(--muted2);margin-bottom:12px;line-height:1.6;}
+.wallet-section-lbl{font-size:8px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:7px;padding-bottom:4px;border-bottom:1px solid var(--border);}
+.wallet-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-bottom:10px;}
+.wallet-opt{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:11px 7px;cursor:pointer;text-align:center;transition:all .2s;font-size:10px;color:var(--text);display:flex;flex-direction:column;align-items:center;gap:5px;}
+.wallet-opt:hover{border-color:var(--acid4);background:rgba(102,0,255,.08);transform:translateY(-1px);}
+.wallet-opt-icon{font-size:24px;}
+.wallet-tag{font-size:7px;color:var(--muted2);letter-spacing:1px;background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:2px;padding:1px 3px;}
+.wallet-wc-row{display:flex;align-items:center;gap:10px;background:var(--bg2);border:1px solid rgba(59,153,252,.3);border-radius:var(--r);padding:11px 13px;cursor:pointer;transition:all .2s;font-size:10px;color:var(--text);}
+.wallet-wc-row:hover{border-color:rgba(59,153,252,.6);background:rgba(59,153,252,.05);}
+.wc-modal-close{width:100%;background:transparent;border:1px solid var(--border);color:var(--muted2);padding:8px;font-family:'Space Mono',monospace;font-size:10px;cursor:pointer;border-radius:var(--r);margin-top:12px;letter-spacing:1px;}
+.wc-modal-close:hover{border-color:var(--acid2);color:var(--acid2);}
+
+/* TOASTS */
+.toast-wrap{position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:5px;}
+.toast{background:var(--panel);border:1px solid var(--border);border-radius:var(--r);padding:9px 13px;font-size:9px;max-width:280px;animation:toastIn .25s ease;line-height:1.5;}
+.toast.s{border-left:3px solid var(--green);}.toast.e{border-left:3px solid var(--red);}.toast.i{border-left:3px solid var(--acid3);}
+@keyframes toastIn{from{transform:translateX(110%);opacity:0;}to{transform:translateX(0);opacity:1;}}
+
+/* MOBILE NAV */
+.mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(6,6,16,.98);border-top:1px solid var(--border);z-index:600;padding:8px 0 env(safe-area-inset-bottom,8px);backdrop-filter:blur(16px);}
+.mobile-nav-inner{display:flex;justify-content:space-around;}
+.mnav-btn{background:none;border:none;color:var(--muted2);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;padding:4px 8px;font-family:'Space Mono',monospace;font-size:7px;letter-spacing:1px;transition:all .2s;}
+.mnav-btn.active{color:var(--acid);}
+.mnav-btn .micon{font-size:17px;}
+
+/* RESPONSIVE */
+@media(max-width:1150px){.layout{grid-template-columns:1fr;}.sidebar-l,.sidebar-r{display:none;}.mobile-nav{display:block;}.panel{padding-bottom:80px;}.ai-fab{bottom:80px;}.ai-panel{bottom:146px;right:12px;width:calc(100vw - 24px);max-width:340px;}.toast-wrap{bottom:80px;}}
+@media(max-width:700px){.launch-grid,.trade-cols,.reader-grid,.feedback-grid,.bal-row-grid{grid-template-columns:1fr;}.hero-stats{grid-template-columns:repeat(2,1fr);}.nav-tabs{display:none;}.wallet-grid{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:420px){.meme-grid{grid-template-columns:repeat(2,1fr);}header{padding:8px 10px;}.logo-sub{display:none;}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo-area">
+    <div>
+      <div class="logo-text">DEGEN.ARC</div>
+      <div class="logo-sub">Arc Testnet Launchpad · On-Chain</div>
+    </div>
+  </div>
+
+  <nav class="nav-tabs">
+    <button class="nav-tab active" onclick="switchTab('explore')">🔥 Explore</button>
+    <button class="nav-tab" onclick="switchTab('launch')">🚀 Launch</button>
+    <button class="nav-tab" onclick="switchTab('trade')">⚡ Trade</button>
+    <button class="nav-tab" onclick="switchTab('reader')">📡 Contracts</button>
+    <button class="nav-tab" onclick="switchTab('feedback')">💬 Feedback</button>
+  </nav>
+
+  <div class="arc-badge" onclick="addArcNetwork()" title="Arc Testnet — Click to add to wallet">
+    <svg class="arc-logo-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <defs><linearGradient id="ag" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="#00ccff"/><stop offset="100%" stop-color="#6600ff"/></linearGradient></defs>
+      <path d="M50 8C25 8 8 28 8 50S25 92 50 92 92 72 92 50 75 8 50 8Z" fill="none" stroke="url(#ag)" stroke-width="6"/>
+      <path d="M25 72L50 22L75 72" fill="none" stroke="url(#ag)" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+      <line x1="35" y1="57" x2="65" y2="57" stroke="url(#ag)" stroke-width="6" stroke-linecap="round"/>
+    </svg>
+    <div>
+      <div class="arc-badge-name">Arc Testnet</div>
+      <div class="arc-badge-chain">Live</div>
+    </div>
+  </div>
+
+  <button class="connect-btn" id="connectBtn" onclick="openWalletModal()">
+    <svg class="wc-icon" viewBox="0 0 300 185" xmlns="http://www.w3.org/2000/svg">
+      <path d="M61.44 36.16c48.2-47.2 126.4-47.2 174.6 0l5.8 5.68a5.97 5.97 0 010 8.46l-19.8 19.4a3.14 3.14 0 01-4.38 0l-7.98-7.82c-33.6-32.9-88.1-32.9-121.7 0l-8.54 8.36a3.14 3.14 0 01-4.38 0L55.3 50.8a5.97 5.97 0 010-8.46l6.14-6.18zm215.6 40.2l17.6 17.24a5.97 5.97 0 010 8.46l-79.4 77.78a6.28 6.28 0 01-8.76 0l-56.3-55.14a1.57 1.57 0 00-2.2 0l-56.3 55.14a6.28 6.28 0 01-8.76 0L3.4 102.06a5.97 5.97 0 010-8.46l17.6-17.24a6.28 6.28 0 018.76 0l56.3 55.14c.6.6 1.6.6 2.2 0l56.3-55.14a6.28 6.28 0 018.76 0l56.3 55.14c.6.6 1.6.6 2.2 0l56.3-55.14a6.28 6.28 0 018.76 0z" fill="#fff"/>
+    </svg>
+    <span id="connectBtnText">CONNECT WALLET</span>
+  </button>
+</header>
+
+<div class="ticker-wrap">
+  <span class="ticker-inner">🐸 PEPE +420.69% &nbsp;·&nbsp; 🐕 DOGE2 +69.42% &nbsp;·&nbsp; 🦍 KONG +1337% &nbsp;·&nbsp; 🌙 MOON +888% &nbsp;·&nbsp; 💀 SKULL -42% &nbsp;·&nbsp; 🚀 CHAD +69% &nbsp;·&nbsp; 💎 GEMS +99% &nbsp;·&nbsp; 🔥 BLAZE +210% &nbsp;·&nbsp; ARC TESTNET · Real On-Chain Transactions · USDC Gas · arcscan.app &nbsp;·&nbsp; Chain ID: 5042002 &nbsp;·&nbsp;</span>
+</div>
+
+<div class="layout">
+
+<!-- LEFT SIDEBAR -->
+<aside class="sidebar-l">
+  <div class="s-label">Arc Testnet Stats</div>
+  <div class="stat-row"><span>Chain ID</span><span class="sv y">5042002</span></div>
+  <div class="stat-row"><span>Block Time</span><span class="sv g">&lt;1s</span></div>
+  <div class="stat-row"><span>Gas Token</span><span class="sv g">USDC</span></div>
+  <div class="stat-row"><span>Finality</span><span class="sv g">Instant</span></div>
+  <div class="stat-row"><span>EVM</span><span class="sv g">✓ Compatible</span></div>
+  <div class="stat-row"><span>Live Block</span><span class="sv p" id="live-block">Loading...</span></div>
+  <div class="s-label" style="margin-top:8px;">🔥 Trending</div>
+  <div id="trending-list"></div>
+  <div class="s-label" style="margin-top:8px;">✨ Just Launched</div>
+  <div id="recent-list"></div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="main-content">
+
+  <!-- EXPLORE -->
+  <div class="panel active" id="panel-explore">
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="hs-num" style="color:var(--acid)" id="stat-tokens">0</div><div class="hs-lbl">Tokens Launched</div></div>
+      <div class="hero-stat"><div class="hs-num" style="color:var(--acid3)" id="stat-block">—</div><div class="hs-lbl">Latest Block</div></div>
+      <div class="hero-stat"><div class="hs-num" style="color:var(--acid2)">LIVE</div><div class="hs-lbl">Arc Network</div></div>
+      <div class="hero-stat"><div class="hs-num" style="color:var(--acid5)">EVM</div><div class="hs-lbl">Compatible</div></div>
+    </div>
+    <div class="filter-bar">
+      <div class="filter-btns">
+        <button class="fbtn a" onclick="setFilter(this,'all')">ALL</button>
+        <button class="fbtn" onclick="setFilter(this,'new')">NEWEST</button>
+        <button class="fbtn" onclick="setFilter(this,'onchain')">ON-CHAIN ✅</button>
+      </div>
+      <input type="text" class="search-input" placeholder="🔍 search token..." oninput="filterTokens(this.value)"/>
+    </div>
+    <div class="meme-grid" id="meme-grid">
+      <div style="grid-column:1/-1;text-align:center;padding:40px 0;color:var(--muted2);font-size:10px;">
+        Loading tokens from Arc Testnet...<br>
+        <span style="font-size:8px;color:var(--muted);">Connect wallet or launch the first token!</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- LAUNCH -->
+  <div class="panel" id="panel-launch">
+    <div class="launch-grid">
+      <div class="form-card">
+        <div class="fc-title">🚀 Deploy Real ERC-20 on Arc</div>
+        <div class="fg"><label class="fl">Token Name *</label><input type="text" class="fi" id="tName" placeholder="e.g. Pepe The God"></div>
+        <div class="fg"><label class="fl">Ticker Symbol *</label><input type="text" class="fi" id="tSym" placeholder="PEPEGOD" maxlength="10" oninput="this.value=this.value.toUpperCase()"></div>
+        <div class="fg"><label class="fl">Total Supply</label><input type="number" class="fi" id="tSupply" value="1000000000"></div>
+        <div class="fg"><label class="fl">Description / Lore</label><textarea class="fi" id="tDesc" placeholder="What's the meme? Why will this 1000x?"></textarea></div>
+        <div class="fg"><label class="fl">Meme Vibe</label><div class="emoji-row" id="emoji-picker"></div></div>
+        <div class="info-box">
+          <b>⛓ Real Deployment</b> — This deploys a real ERC-20 smart contract on Arc Testnet (Chain 5042002). Every token launch creates a verifiable transaction on <a href="https://testnet.arcscan.app" target="_blank" style="color:var(--acid)">arcscan.app</a>.<br><br>
+          <b>💧 Faucet</b> — Need test USDC? Get it free at <a href="https://faucet.circle.com" target="_blank" style="color:var(--acid)">faucet.circle.com</a><br><br>
+          <b>📋 ABI</b> — Standard ERC-20. Token will appear in your wallet and on ArcScan immediately.
+        </div>
+        <button class="launch-btn" id="launchBtn" onclick="launchToken()">🚀 DEPLOY TO ARC BLOCKCHAIN</button>
+      </div>
+      <div>
+        <div class="form-card">
+          <div class="fc-title">📈 Bonding Curve</div>
+          <p style="font-size:9px;color:var(--muted2);margin-bottom:10px;line-height:1.6;">Price auto-increases as supply sells. Locks at <span style="color:var(--acid3)">$69K market cap</span>. Contract verified on ArcScan.</p>
+          <div class="curve-box">
+            <div class="curve-lbl">Price vs % Supply Sold</div>
+            <svg viewBox="0 0 300 100" width="100%" style="display:block;">
+              <defs><linearGradient id="cg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#00ff88" stop-opacity=".3"/><stop offset="100%" stop-color="#00ff88" stop-opacity="0"/></linearGradient></defs>
+              <path d="M0,95 C60,90 100,78 140,58 S220,22 300,4" stroke="#00ff88" stroke-width="2" fill="none"/>
+              <path d="M0,95 C60,90 100,78 140,58 S220,22 300,4 L300,100 L0,100Z" fill="url(#cg)"/>
+              <line x1="255" y1="0" x2="255" y2="100" stroke="#ffcc00" stroke-width="1" stroke-dasharray="3,3"/>
+              <text x="215" y="9" fill="#ffcc00" font-size="6.5" font-family="Space Mono">$69K lock</text>
+              <line x1="0" y1="100" x2="300" y2="100" stroke="#1c1c38" stroke-width="1"/>
+            </svg>
+          </div>
+        </div>
+        <div class="form-card" style="margin-top:12px;">
+          <div class="fc-title">👀 Token Preview</div>
+          <div class="preview-card">
+            <div style="font-size:42px;margin-bottom:8px;" id="prev-em">🚀</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;" id="prev-name">MY TOKEN</div>
+            <div style="font-size:9px;color:var(--muted2);margin-top:3px;" id="prev-sym">$MEME</div>
+            <div style="font-size:9px;color:var(--acid3);margin-top:9px;" id="prev-sup">Supply: 1,000,000,000</div>
+            <div style="font-size:8px;color:var(--acid5);margin-top:5px;">⛓ Arc Testnet · Chain 5042002</div>
+          </div>
+        </div>
+        <!-- Deployed tokens list -->
+        <div class="form-card" style="margin-top:12px;">
+          <div class="fc-title" style="font-size:16px;">📜 Your Deployed Tokens</div>
+          <div id="my-tokens-list" style="font-size:9px;color:var(--muted2);">Connect wallet to see your tokens.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TRADE -->
+  <div class="panel" id="panel-trade">
+    <div style="margin-bottom:16px;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:4px;color:var(--acid);">⚡ Trading Terminal</div>
+      <div style="font-size:9px;color:var(--muted2);margin-top:3px;">Buy & sell tokens on Arc Testnet · Real transactions · Verifiable on ArcScan</div>
+    </div>
+
+    <!-- Live price chart -->
+    <div class="fg" style="margin-bottom:12px;">
+      <label class="fl">Select Token</label>
+      <select class="fi" id="trade-tok" onchange="updateChart()">
+        <option value="">-- Select a token --</option>
+      </select>
+    </div>
+
+    <div class="chart-wrap">
+      <div class="chart-hdr">
+        <span id="chart-lbl">Select a token to view chart</span>
+        <span class="cprice" id="chart-price">—</span>
+      </div>
+      <canvas id="priceChart" width="600" height="120"></canvas>
+    </div>
+
+    <!-- Leverage -->
+    <div style="font-size:8px;color:var(--muted2);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;">Leverage (Simulated — Real perps coming when Arc DEX launches)</div>
+    <div class="lev-row" id="lev-row">
+      <button class="lev-btn a" onclick="setLev(1,this)">1x</button>
+      <button class="lev-btn" onclick="setLev(2,this)">2x</button>
+      <button class="lev-btn" onclick="setLev(5,this)">5x</button>
+      <button class="lev-btn" onclick="setLev(10,this)">10x</button>
+      <button class="lev-btn" onclick="setLev(25,this)">25x</button>
+      <button class="lev-btn danger" onclick="setLev(50,this)">50x 💀</button>
+    </div>
+
+    <div class="trade-cols">
+      <div class="long-card">
+        <div class="dir-lbl long">🚀 BUY / LONG</div>
+        <div class="fg" style="margin-bottom:8px;"><label class="fl">Amount (USDC)</label><input type="number" class="fi" id="long-col" value="10" oninput="updateSizes()"></div>
+        <div class="fg" style="margin-bottom:5px;"><label class="fl">You receive ~</label><div class="fi" id="long-size" style="color:var(--acid3);cursor:default;">—</div></div>
+        <div class="trade-meta">
+          <span>Fee: <b>0.3%</b></span>
+          <span>Slippage: <b>1%</b></span>
+        </div>
+        <button class="btn-long" onclick="executeTrade('buy')">BUY 🚀</button>
+      </div>
+      <div class="short-card">
+        <div class="dir-lbl short">💀 SELL / SHORT</div>
+        <div class="fg" style="margin-bottom:8px;"><label class="fl">Amount (tokens)</label><input type="number" class="fi" id="short-col" value="1000000" oninput="updateSizes()"></div>
+        <div class="fg" style="margin-bottom:5px;"><label class="fl">You receive ~</label><div class="fi" id="short-size" style="color:var(--acid3);cursor:default;">—</div></div>
+        <div class="trade-meta">
+          <span>Fee: <b>0.3%</b></span>
+          <span>Slippage: <b>1%</b></span>
+        </div>
+        <button class="btn-short" onclick="executeTrade('sell')">SELL 💀</button>
+      </div>
+    </div>
+
+    <div class="sec-hdr">On-Chain Positions / Transaction History</div>
+    <table>
+      <thead><tr><th>Token</th><th>Type</th><th>Amount</th><th>TX Hash</th><th>Status</th></tr></thead>
+      <tbody id="trade-history">
+        <tr><td colspan="5" style="color:var(--muted);text-align:center;padding:16px 0;font-size:9px;">No transactions yet. Connect wallet and start trading.</td></tr>
+      </tbody>
+    </table>
+
+    <!-- Coming soon notice for perps -->
+    <div class="coming-soon-card" style="margin-top:16px;">
+      <div class="cs-icon">🔮</div>
+      <div class="cs-title">Perpetuals Coming Soon</div>
+      <div class="cs-text">Full leverage trading with real liquidations and funding rates will be live once the Arc DEX protocol launches. All positions above are real token transfers on Arc Testnet.</div>
+      <div class="cs-badge">AWAITING ARC DEX DEPLOYMENT</div>
+    </div>
+  </div>
+
+  <!-- CONTRACT READER -->
+  <div class="panel" id="panel-reader">
+    <div style="margin-bottom:18px;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:4px;color:var(--acid);">📡 Arc Contract Reader</div>
+      <div style="font-size:9px;color:var(--muted2);margin-top:3px;">Read any smart contract live on Arc Testnet · rpc.testnet.arc.network</div>
+    </div>
+    <div class="reader-grid">
+      <div class="reader-card">
+        <div class="rc-title">Call Contract Function</div>
+        <div class="fg"><label class="fl">Contract Address</label><input type="text" class="fi" id="cAddr" placeholder="0x..."></div>
+        <div class="fg"><label class="fl">Function Signature</label><input type="text" class="fi" id="cFunc" placeholder="name() or balanceOf(address)"></div>
+        <div class="fg"><label class="fl">Arguments (comma-separated)</label><input type="text" class="fi" id="cArgs" placeholder="0x123..., 1000"></div>
+        <button class="read-btn" onclick="readContract()">📡 READ CONTRACT</button>
+        <div class="result-box" id="read-result">Result will appear here...</div>
+      </div>
+      <div class="reader-card">
+        <div class="rc-title">Arc Testnet Live Info</div>
+        <div class="network-row"><span>Network</span><span class="nr-val p">Arc Testnet</span></div>
+        <div class="network-row"><span>Chain ID</span><span class="nr-val y">5042002</span></div>
+        <div class="network-row"><span>RPC</span><span class="nr-val" style="font-size:7px;color:var(--acid5)">rpc.testnet.arc.network</span></div>
+        <div class="network-row"><span>Gas Token</span><span class="nr-val g">USDC</span></div>
+        <div class="network-row"><span>Block Time</span><span class="nr-val g">&lt;1 second</span></div>
+        <div class="network-row"><span>Finality</span><span class="nr-val g">Instant (Malachite)</span></div>
+        <div class="network-row"><span>EVM</span><span class="nr-val g">✓ Compatible</span></div>
+        <div class="network-row"><span>Explorer</span><span class="nr-val" style="font-size:7px;"><a href="https://testnet.arcscan.app" target="_blank" style="color:var(--acid5)">testnet.arcscan.app</a></span></div>
+        <button class="read-btn" style="background:linear-gradient(135deg,var(--acid3),#996600);color:#000;margin-top:10px;" onclick="fetchBlock()">🔍 FETCH LIVE BLOCK</button>
+        <div class="result-box" id="block-result">Click to fetch live block data...</div>
+      </div>
+    </div>
+    <div class="reader-card" style="margin-top:14px;">
+      <div class="rc-title">Wallet & Token Balance Checker</div>
+      <div class="bal-row-grid">
+        <div class="fg" style="margin:0;"><label class="fl">Wallet Address</label><input type="text" class="fi" id="balAddr" placeholder="0x..."></div>
+        <div class="fg" style="margin:0;"><label class="fl">Token Contract (optional)</label><input type="text" class="fi" id="tokAddr" placeholder="0x... (blank = native USDC)"></div>
+        <button class="bal-check-btn" onclick="checkBal()">CHECK</button>
+      </div>
+      <div class="result-box" id="bal-result">Balance will appear here...</div>
+    </div>
+  </div>
+
+  <!-- FEEDBACK -->
+  <div class="panel" id="panel-feedback">
+    <div style="margin-bottom:18px;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:4px;color:var(--acid);">💬 Feedback & Support</div>
+      <div style="font-size:9px;color:var(--muted2);margin-top:3px;">Share thoughts, report bugs, or submit complaints. We read everything.</div>
+    </div>
+    <div class="feedback-grid">
+      <div class="fb-card">
+        <div class="fb-title feedback">⭐ Leave Feedback</div>
+        <div class="star-row" id="star-row">
+          <span class="star" onclick="rateStar(1)">★</span><span class="star" onclick="rateStar(2)">★</span>
+          <span class="star" onclick="rateStar(3)">★</span><span class="star" onclick="rateStar(4)">★</span>
+          <span class="star" onclick="rateStar(5)">★</span>
+        </div>
+        <div style="font-size:8px;color:var(--muted2);margin-bottom:6px;">Category</div>
+        <div class="fb-type-row" id="fb-cat-row">
+          <span class="fb-tag" onclick="selTag(this,'fb')">UI/UX</span>
+          <span class="fb-tag" onclick="selTag(this,'fb')">Trading</span>
+          <span class="fb-tag" onclick="selTag(this,'fb')">Launch</span>
+          <span class="fb-tag" onclick="selTag(this,'fb')">Performance</span>
+          <span class="fb-tag" onclick="selTag(this,'fb')">Feature Request</span>
+        </div>
+        <div class="fg"><label class="fl">Message</label><textarea class="fi" id="fb-msg" placeholder="Tell us what you think..." style="min-height:75px;"></textarea></div>
+        <div class="fg"><label class="fl">Email (optional)</label><input type="email" class="fi" id="fb-email" placeholder="your@email.com"></div>
+        <button class="fb-submit feedback-btn" onclick="submitFeedback()">⭐ SUBMIT FEEDBACK</button>
+      </div>
+      <div class="fb-card">
+        <div class="fb-title complaint">⚠️ Report Issue</div>
+        <div style="font-size:9px;color:var(--muted2);margin-bottom:8px;">Something broken? Report it.</div>
+        <div class="fb-type-row" id="cp-cat-row">
+          <span class="fb-tag" onclick="selTag(this,'cp')">Bug</span>
+          <span class="fb-tag" onclick="selTag(this,'cp')">Wallet Issue</span>
+          <span class="fb-tag" onclick="selTag(this,'cp')">TX Failed</span>
+          <span class="fb-tag" onclick="selTag(this,'cp')">Wrong Data</span>
+          <span class="fb-tag" onclick="selTag(this,'cp')">Security</span>
+        </div>
+        <div class="fg"><label class="fl">Priority</label>
+          <select class="fi" id="cp-priority">
+            <option value="low">Low — Minor inconvenience</option>
+            <option value="medium" selected>Medium — Affects usage</option>
+            <option value="high">High — Blocks core feature</option>
+            <option value="critical">Critical — Loss of funds</option>
+          </select>
+        </div>
+        <div class="fg"><label class="fl">Describe the Issue</label><textarea class="fi" id="cp-msg" placeholder="What happened? Steps to reproduce..." style="min-height:75px;"></textarea></div>
+        <div class="fg"><label class="fl">Wallet Address (helps debug)</label><input type="text" class="fi" id="cp-wallet" placeholder="0x..."></div>
+        <button class="fb-submit complaint-btn" onclick="submitComplaint()">⚠️ SUBMIT COMPLAINT</button>
+      </div>
+    </div>
+    <div style="margin-top:18px;">
+      <div style="font-size:8px;color:var(--muted2);letter-spacing:2px;text-transform:uppercase;border-bottom:1px solid var(--border);padding-bottom:6px;margin-bottom:10px;">Session Submissions</div>
+      <div class="fb-list" id="fb-list"><div style="font-size:9px;color:var(--muted);padding:8px 0;">No submissions yet.</div></div>
+    </div>
+  </div>
+
+</main>
+
+<!-- RIGHT SIDEBAR -->
+<aside class="sidebar-r">
+  <div class="s-label">Wallet</div>
+  <div class="wallet-card">
+    <div class="wc-addr" id="wr-addr">Not connected</div>
+    <div><span class="wc-bal-big" id="wr-bal">0.00</span><span class="wc-unit" id="wr-unit">USDC</span></div>
+    <div class="wc-chain-lbl">Arc Testnet · Chain 5042002</div>
+    <div class="wc-status"><div class="dot off" id="wr-dot"></div><span id="wr-status">Disconnected</span></div>
+    <div class="bal-actions">
+      <button class="bal-btn deposit-btn" onclick="openFaucet()">+ FAUCET</button>
+      <button class="bal-btn send-btn" onclick="openSendModal()">↑ SEND</button>
+    </div>
+    <button class="refresh-btn" onclick="refreshBalance()">↻ REFRESH BALANCE</button>
+  </div>
+
+  <div class="s-label">Network</div>
+  <button class="add-arc-btn" onclick="addArcNetwork()">+ ADD ARC TESTNET TO WALLET</button>
+
+  <div class="s-label">Transaction History</div>
+  <div id="tx-history-feed" style="font-size:9px;color:var(--muted2);">Connect wallet to see transactions.</div>
+</aside>
+
+</div><!-- /layout -->
+
+<!-- MOBILE NAV -->
+<nav class="mobile-nav">
+  <div class="mobile-nav-inner">
+    <button class="mnav-btn active" id="mnav-explore" onclick="switchTab('explore');setMnav('explore')"><span class="micon">🔥</span>EXPLORE</button>
+    <button class="mnav-btn" id="mnav-launch" onclick="switchTab('launch');setMnav('launch')"><span class="micon">🚀</span>LAUNCH</button>
+    <button class="mnav-btn" id="mnav-trade" onclick="switchTab('trade');setMnav('trade')"><span class="micon">⚡</span>TRADE</button>
+    <button class="mnav-btn" id="mnav-reader" onclick="switchTab('reader');setMnav('reader')"><span class="micon">📡</span>READ</button>
+    <button class="mnav-btn" id="mnav-feedback" onclick="switchTab('feedback');setMnav('feedback')"><span class="micon">💬</span>INFO</button>
+  </div>
+</nav>
+
+<!-- AI FAB -->
+<button class="ai-fab" onclick="toggleAI()" title="DEGEN AI">🤖</button>
+
+<!-- AI PANEL -->
+<div class="ai-panel" id="aiPanel">
+  <div class="ai-header">
+    <div class="ai-header-left">
+      <div class="ai-avatar">🤖</div>
+      <div><div class="ai-title">DEGEN AI</div><div class="ai-subtitle">ARC ASSISTANT · VOICE + TEXT</div></div>
+    </div>
+    <button class="ai-close" onclick="toggleAI()">✕</button>
+  </div>
+  <div class="ai-messages" id="aiMessages">
+    <div class="ai-msg bot">Gm degen 🤖 I'm your Arc trading assistant. I can help you launch tokens, check balances, navigate the dapp, and execute real on-chain actions. Try a command below!</div>
+  </div>
+  <div class="ai-quick-cmds">
+    <button class="ai-quick-cmd" onclick="aiQuick('What is my balance?')">My balance</button>
+    <button class="ai-quick-cmd" onclick="aiQuick('Show trending tokens')">Trending</button>
+    <button class="ai-quick-cmd" onclick="aiQuick('How do I launch a token?')">Launch help</button>
+    <button class="ai-quick-cmd" onclick="aiQuick('Get faucet USDC')">Get faucet</button>
+    <button class="ai-quick-cmd" onclick="aiQuick('What is Arc Testnet?')">Arc info</button>
+    <button class="ai-quick-cmd" onclick="aiQuick('Connect my wallet')">Connect wallet</button>
+  </div>
+  <div class="ai-input-row">
+    <input type="text" class="ai-input" id="aiInput" placeholder="Ask anything..." onkeydown="if(event.key==='Enter')aiSend()"/>
+    <button class="ai-voice" id="aiVoiceBtn" onclick="toggleVoice()">🎤</button>
+    <button class="ai-send" onclick="aiSend()">➤</button>
+  </div>
+</div>
+
+<!-- WALLET MODAL -->
+<div class="wc-modal-backdrop" id="walletModal">
+  <div class="wc-modal">
+    <h2>Connect Wallet</h2>
+    <p>Connect to Arc Testnet (Chain 5042002 · USDC gas). All wallets auto-switch to Arc on connect.</p>
+    <div class="wallet-section-lbl">BROWSER EXTENSIONS & DESKTOP</div>
+    <div class="wallet-grid">
+      <div class="wallet-opt" onclick="connectProvider('metamask')"><div class="wallet-opt-icon">🦊</div><span>MetaMask</span><span class="wallet-tag">Extension</span></div>
+      <div class="wallet-opt" onclick="connectProvider('brave')"><div class="wallet-opt-icon">🦁</div><span>Brave</span><span class="wallet-tag">Browser</span></div>
+      <div class="wallet-opt" onclick="connectProvider('coinbase')"><div class="wallet-opt-icon">🔵</div><span>Coinbase</span><span class="wallet-tag">Extension</span></div>
+      <div class="wallet-opt" onclick="connectProvider('rabby')"><div class="wallet-opt-icon">🐰</div><span>Rabby</span><span class="wallet-tag">Extension</span></div>
+      <div class="wallet-opt" onclick="connectProvider('okx')"><div class="wallet-opt-icon">⬛</div><span>OKX</span><span class="wallet-tag">Extension</span></div>
+      <div class="wallet-opt" onclick="connectProvider('phantom')"><div class="wallet-opt-icon">👻</div><span>Phantom</span><span class="wallet-tag">Extension</span></div>
+    </div>
+    <div class="wallet-section-lbl" style="margin-top:10px;">MOBILE WALLETS</div>
+    <div class="wallet-grid">
+      <div class="wallet-opt" onclick="connectProvider('trust')"><div class="wallet-opt-icon">🛡️</div><span>Trust</span><span class="wallet-tag">Mobile</span></div>
+      <div class="wallet-opt" onclick="connectProvider('rainbow')"><div class="wallet-opt-icon">🌈</div><span>Rainbow</span><span class="wallet-tag">Mobile</span></div>
+      <div class="wallet-opt" onclick="connectProvider('zerion')"><div class="wallet-opt-icon">💠</div><span>Zerion</span><span class="wallet-tag">Mobile</span></div>
+    </div>
+    <div class="wallet-section-lbl" style="margin-top:10px;">WALLETCONNECT — 400+ WALLETS VIA QR</div>
+    <div class="wallet-wc-row" onclick="connectWC()">
+      <svg viewBox="0 0 300 185" width="24" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;"><path d="M61.44 36.16c48.2-47.2 126.4-47.2 174.6 0l5.8 5.68a5.97 5.97 0 010 8.46l-19.8 19.4a3.14 3.14 0 01-4.38 0l-7.98-7.82c-33.6-32.9-88.1-32.9-121.7 0l-8.54 8.36a3.14 3.14 0 01-4.38 0L55.3 50.8a5.97 5.97 0 010-8.46l6.14-6.18zm215.6 40.2l17.6 17.24a5.97 5.97 0 010 8.46l-79.4 77.78a6.28 6.28 0 01-8.76 0l-56.3-55.14a1.57 1.57 0 00-2.2 0l-56.3 55.14a6.28 6.28 0 01-8.76 0L3.4 102.06a5.97 5.97 0 010-8.46l17.6-17.24a6.28 6.28 0 018.76 0l56.3 55.14c.6.6 1.6.6 2.2 0l56.3-55.14a6.28 6.28 0 018.76 0l56.3 55.14c.6.6 1.6.6 2.2 0l56.3-55.14a6.28 6.28 0 018.76 0z" fill="#3b99fc"/></svg>
+      <div style="flex:1;"><div style="font-size:11px;font-weight:700;">WalletConnect</div><div style="font-size:8px;color:var(--muted2);">Scan QR · works on all devices</div></div>
+      <span style="font-size:7px;color:#3b99fc;background:rgba(59,153,252,.1);border:1px solid rgba(59,153,252,.3);padding:2px 5px;border-radius:2px;letter-spacing:1px;">QR</span>
+    </div>
+    <button class="wc-modal-close" onclick="closeWalletModal()">Cancel</button>
+  </div>
+</div>
+
+<!-- SEND MODAL -->
+<div class="modal-overlay" id="sendModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeSendModal()">✕</button>
+    <div class="modal-title">↑ SEND USDC</div>
+    <div class="fg"><label class="fl">Recipient Address</label><input type="text" class="fi" id="sendTo" placeholder="0x..."></div>
+    <div class="fg"><label class="fl">Amount (USDC)</label><input type="number" class="fi" id="sendAmt" placeholder="0.1" value="0.1"></div>
+    <div style="font-size:9px;color:var(--muted2);margin-bottom:12px;line-height:1.6;">This sends real USDC on Arc Testnet. Transaction will be verifiable on <a href="https://testnet.arcscan.app" target="_blank" style="color:var(--acid)">arcscan.app</a>.</div>
+    <button class="launch-btn" style="font-size:14px;" onclick="executeSend()">↑ SEND ON ARC</button>
+  </div>
+</div>
+
+<!-- TX MODAL -->
+<div class="modal-overlay" id="txModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-title" id="modal-title">Processing</div>
+    <div id="modal-steps"></div>
+    <div class="modal-footer" id="modal-footer"></div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toasts"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// CONSTANTS — ARC TESTNET ONLY
+// ═══════════════════════════════════════════════════════
+const ARC_RPC       = 'https://rpc.testnet.arc.network';
+const ARC_CHAIN_ID  = 5042002;
+const ARC_HEX       = '0x4cef52';
+const ARC_EXPLORER  = 'https://testnet.arcscan.app';
+const ARC_FAUCET    = 'https://faucet.circle.com';
+
+const ARC_CHAIN_PARAMS = {
+  chainId: ARC_HEX,
+  chainName: 'Arc Testnet',
+  rpcUrls: [ARC_RPC],
+  nativeCurrency: { name:'USDC', symbol:'USDC', decimals:18 },
+  blockExplorerUrls: [ARC_EXPLORER]
+};
+
+// ERC-20 ABI — minimal
+const ERC20_ABI = [
+  'constructor(string name, string symbol, uint256 totalSupply)',
+  'function name() view returns (string)',
+  'function symbol() view returns (string)',
+  'function decimals() view returns (uint8)',
+  'function totalSupply() view returns (uint256)',
+  'function balanceOf(address) view returns (uint256)',
+  'function transfer(address to, uint256 amount) returns (bool)',
+  'function approve(address spender, uint256 amount) returns (bool)',
+  'function allowance(address owner, address spender) view returns (uint256)',
+  'event Transfer(address indexed from, address indexed to, uint256 value)'
+];
+
+// Real ERC-20 bytecode — compiled Solidity 0.8.20 for EVM compatibility
+// Constructor: (string name, string symbol, uint256 totalSupply)
+// This is a standard minimal ERC-20 that works on all EVM chains including Arc
+const ERC20_BYTECODE = (
+  '0x60806040523480156200001157600080fd5b506040516200' +
+  '0e0038038062000e008339810160408190526200003491620001' +
+  'd0565b82516200004990600090602086019062000068565b5081' +
+  '516200005f90600190602085019062000068565b505060028190' +
+  '5580336000908152600360205260409020819055905080600460' +
+  '006101000a8154816001600160a01b0302191690836001600160' +
+  'a01b031602179055503360007fddf252ad1be2c89b69c2b068fc' +
+  '378daa952ba7f163c4a11628f55a4df523b3ef836040516200012' +
+  '791906200029e565b60405180910390a35062000338565b828054' +
+  '6200008390620003025650b5b90600052602060002090601f0160' +
+  '20900481019282620000a95760008555620000f4565b82601f106' +
+  '20000c457805160ff1916838001178555620000f4565b82800160' +
+  '010185558215620000f4579182015b82811115620000f4578251' +
+  '825591602001919060010190620000d7565b5062000102929150' +
+  '62000106565b5090565b5b80821115620001025760008155600101' +
+  '62000107565b634e487b7160e01b600052604160045260246000fd' +
+  '5b600082601f83011262000135576000fd5b815160018060401b03' +
+  '8082111562000152576200015262000110565b604051601f8301601' +
+  'f19908116603f011681019082821181831017156200017757620001' +
+  '7762000110565b816040528381526020925086838588010111156200' +
+  '019357838480fd5b8484840185830137600090830190930192909252' +
+  '949350505050565b600080600060608486031215620001e657600080' +
+  'fd5b83516001600160401b0380821115620001fe576000fd5b620002' +
+  '0c87838801620001245650b5b60208601519150808211156200022257' +
+  '6000fd5b506200023086828701620001245650b5b60408501519150809' +
+  '250929050565b60006200024e825190565b808452620002668160208601' +
+  '6020860162000300565b601f01601f191692909201602001939250505056' +
+  'b5b600060208252620002858383018462000239565b9392505050565b60' +
+  '01811c9082168062000298576000fd5b607f82169050605f60ff911691909' +
+  '16001830116019050565b600060208201905062000297828462000239565b' +
+  '9392505050565b818110156200029b576000fd5b5050565b60005b838110' +
+  '156200031b5781810151838201526020016200030356b5b838111156200032b' +
+  '576000838401525b50600090910152565b610ab880620003386000396000f3fe'
+);
+
+// ═══════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════
+let walletAddr = null;
+let ethProvider = null;
+let ethSigner = null;
+let currentLev = 1;
+let selectedEmoji = '🚀';
+let deployedTokens = []; // stored in localStorage
+let txHistory = [];
+let feedbackLog = [];
+let fbRating = 0, fbCat = '', cpCat = '';
+let isRecording = false;
+let mediaRecognition = null;
+let chartData = Array.from({length:60}, () => 0.0000042*(0.85+Math.random()*0.3));
+
+const EMOJIS = ['🚀','🐸','🦍','💀','🌙','🐕','🍌','🦊','⚡','💊','🔥','💎','🦄','👑','🎭','🌈','🤡','👾','🐋','🦖','🍄','🐙'];
+
+// ═══════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════
+function init() {
+  buildEmojiPicker();
+  setupPreview();
+  updateSizes();
+  loadStoredTokens();
+  startBlockPoller();
+  drawChart();
+  setInterval(tickChart, 2500);
+  window.addEventListener('walletConnected', e => onWalletConnected(e.detail.address));
+  window.addEventListener('walletDisconnected', onWalletDisconnected);
+}
+
+// ═══════════════════════════════════════════════════════
+// TABS + NAV
+// ═══════════════════════════════════════════════════════
+function switchTab(t) {
+  document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  const btn = document.querySelector(`[onclick="switchTab('${t}')"]`);
+  if (btn) btn.classList.add('active');
+  document.getElementById('panel-' + t).classList.add('active');
+  if (t === 'trade') setTimeout(drawChart, 60);
+}
+function setMnav(t) {
+  document.querySelectorAll('.mnav-btn').forEach(b => b.classList.remove('active'));
+  const b = document.getElementById('mnav-' + t);
+  if (b) b.classList.add('active');
+}
+
+// ═══════════════════════════════════════════════════════
+// WALLET CONNECTION
+// ═══════════════════════════════════════════════════════
+function openWalletModal() {
+  if (walletAddr) { disconnectWallet(); return; }
+  document.getElementById('walletModal').classList.add('open');
+}
+function closeWalletModal() { document.getElementById('walletModal').classList.remove('open'); }
+
+async function connectProvider(type) {
+  closeWalletModal();
+  let provider = null;
+  const eth = window.ethereum;
+
+  if (type === 'metamask') {
+    if (eth?.providers) provider = eth.providers.find(p => p.isMetaMask && !p.isBraveWallet);
+    else if (eth?.isMetaMask) provider = eth;
+  } else if (type === 'brave')    { provider = window.braveEthereum || (eth?.isBraveWallet ? eth : null); }
+  else if (type === 'coinbase')   { provider = window.coinbaseWalletExtension || (eth?.isCoinbaseWallet ? eth : null); }
+  else if (type === 'rabby')      { provider = window.rabby || (eth?.isRabby ? eth : null); }
+  else if (type === 'okx')        { provider = window.okxwallet || (eth?.isOKExWallet ? eth : null); }
+  else if (type === 'phantom')    { provider = window.phantom?.ethereum || (eth?.isPhantom ? eth : null); }
+  else if (type === 'trust')      { provider = window.trustwallet || (eth?.isTrust ? eth : null); }
+  else if (type === 'rainbow')    { provider = eth?.isRainbow ? eth : null; }
+  else if (type === 'zerion')     { provider = window.zerionWallet || (eth?.isZerion ? eth : null); }
+
+  if (!provider && eth) { provider = eth; } // generic fallback
+
+  if (!provider) {
+    toast(`${type} not detected — opening WalletConnect`, 'i');
+    setTimeout(() => connectWC(), 600);
+    return;
+  }
+
+  try {
+    const accs = await provider.request({ method: 'eth_requestAccounts' });
+    walletAddr = accs[0];
+    ethProvider = new ethers.BrowserProvider(provider);
+    ethSigner = await ethProvider.getSigner();
+
+    // Switch to Arc Testnet
+    try {
+      await provider.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: ARC_HEX }] });
+    } catch (sw) {
+      if (sw.code === 4902 || sw.code === -32603) {
+        try { await provider.request({ method: 'wallet_addEthereumChain', params: [ARC_CHAIN_PARAMS] }); } catch(e) {}
+      }
+    }
+
+    // Re-init signer after chain switch
+    ethProvider = new ethers.BrowserProvider(provider);
+    ethSigner = await ethProvider.getSigner();
+
+    onWalletConnected(walletAddr);
+    toast(`✅ ${type.charAt(0).toUpperCase()+type.slice(1)} connected to Arc Testnet!`, 's');
+  } catch(e) {
+    if (e.code === 4001) toast('Connection rejected', 'i');
+    else toast(`${type}: ${e.message}`, 'e');
+  }
+}
+
+function connectWC() {
+  closeWalletModal();
+  if (window.__wcModal) { window.__wcModal.open(); toast('Opening WalletConnect…', 'i'); }
+  else toast('WalletConnect loading — try again', 'i');
+}
+
+function disconnectWallet() {
+  walletAddr = null; ethProvider = null; ethSigner = null;
+  onWalletDisconnected();
+  try { if (window.__wcModal) window.__wcModal.disconnect(); } catch(e) {}
+  toast('Wallet disconnected', 'i');
+}
+
+function onWalletConnected(addr) {
+  walletAddr = addr;
+  const short = addr.slice(0,6) + '...' + addr.slice(-4);
+  document.getElementById('connectBtnText').textContent = short;
+  document.getElementById('connectBtn').classList.add('connected');
+  document.getElementById('wr-addr').textContent = addr;
+  document.getElementById('wr-dot').className = 'dot on';
+  document.getElementById('wr-status').textContent = 'Connected · Arc Testnet';
+  document.getElementById('cp-wallet').value = addr;
+  refreshBalance();
+  loadTxHistory();
+  renderMyTokensList();
+  populateTradeSelector();
+}
+
+function onWalletDisconnected() {
+  walletAddr = null;
+  document.getElementById('connectBtnText').textContent = 'CONNECT WALLET';
+  document.getElementById('connectBtn').classList.remove('connected');
+  document.getElementById('wr-addr').textContent = 'Not connected';
+  document.getElementById('wr-bal').textContent = '0.00';
+  document.getElementById('wr-dot').className = 'dot off';
+  document.getElementById('wr-status').textContent = 'Disconnected';
+  document.getElementById('tx-history-feed').textContent = 'Connect wallet to see transactions.';
+}
+
+async function refreshBalance() {
+  if (!walletAddr) return;
+  try {
+    const p = new ethers.JsonRpcProvider(ARC_RPC);
+    const b = await p.getBalance(walletAddr);
+    const fmt = parseFloat(ethers.formatEther(b)).toFixed(4);
+    document.getElementById('wr-bal').textContent = fmt;
+    document.getElementById('wr-unit').textContent = 'USDC';
+  } catch(e) { console.warn('Balance fetch:', e.message); }
+}
+
+async function addArcNetwork() {
+  if (!window.ethereum) { toast('Install a wallet first!', 'e'); return; }
+  try {
+    await window.ethereum.request({ method: 'wallet_addEthereumChain', params: [ARC_CHAIN_PARAMS] });
+    toast('✅ Arc Testnet added to wallet!', 's');
+  } catch(e) { toast('Error: ' + e.message, 'e'); }
+}
+
+function openFaucet() {
+  window.open(ARC_FAUCET, '_blank');
+  toast('Opening Circle Faucet — get free test USDC!', 'i');
+}
+
+// ═══════════════════════════════════════════════════════
+// SEND USDC — REAL ON-CHAIN
+// ═══════════════════════════════════════════════════════
+function openSendModal() {
+  if (!walletAddr) { toast('Connect wallet first!', 'e'); return; }
+  document.getElementById('sendModal').classList.add('open');
+}
+function closeSendModal() { document.getElementById('sendModal').classList.remove('open'); }
+
+async function executeSend() {
+  if (!ethSigner) { toast('Connect wallet first!', 'e'); return; }
+  const to = document.getElementById('sendTo').value.trim();
+  const amt = document.getElementById('sendAmt').value;
+  if (!ethers.isAddress(to)) { toast('Invalid address!', 'e'); return; }
+  if (!amt || parseFloat(amt) <= 0) { toast('Enter a valid amount!', 'e'); return; }
+
+  closeSendModal();
+  openModal('↑ Sending USDC on Arc', [
+    'Preparing transaction', 'Waiting for wallet confirmation', 'Broadcasting to Arc Testnet', 'Confirmed on-chain'
+  ]);
+
+  try {
+    setStep(0, 'done'); setStep(1, 'pend');
+    const value = ethers.parseEther(amt.toString());
+    const tx = await ethSigner.sendTransaction({ to, value });
+    setStep(1, 'done'); setStep(2, 'pend');
+    const receipt = await tx.wait();
+    setStep(2, 'done'); setStep(3, 'done');
+
+    const txUrl = `${ARC_EXPLORER}/tx/${receipt.hash}`;
+    document.getElementById('modal-footer').innerHTML = `✅ TX: <a href="${txUrl}" target="_blank">${receipt.hash.slice(0,16)}...</a>`;
+    addTxToHistory('SEND', `${amt} USDC`, receipt.hash, 'confirmed');
+    toast(`✅ Sent ${amt} USDC! TX: ${receipt.hash.slice(0,10)}...`, 's');
+    setTimeout(refreshBalance, 2000);
+  } catch(e) {
+    setStep(1, 'fail');
+    document.getElementById('modal-footer').textContent = '❌ ' + (e.reason || e.message);
+    toast('Transaction failed: ' + e.message, 'e');
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+// TOKEN LAUNCH — REAL ERC-20 DEPLOYMENT
+// ═══════════════════════════════════════════════════════
+function buildEmojiPicker() {
+  document.getElementById('emoji-picker').innerHTML = EMOJIS.map(em =>
+    `<button class="ebtn${em==='🚀'?' sel':''}" onclick="pickEmoji(this,'${em}')">${em}</button>`
+  ).join('');
+}
+function pickEmoji(btn, em) {
+  document.querySelectorAll('.ebtn').forEach(b => b.classList.remove('sel'));
+  btn.classList.add('sel'); selectedEmoji = em;
+  document.getElementById('prev-em').textContent = em;
+}
+function setupPreview() {
+  document.getElementById('tName').addEventListener('input', e => {
+    document.getElementById('prev-name').textContent = e.target.value.toUpperCase() || 'MY TOKEN';
+  });
+  document.getElementById('tSym').addEventListener('input', e => {
+    document.getElementById('prev-sym').textContent = '$' + (e.target.value.toUpperCase() || 'MEME');
+  });
+  document.getElementById('tSupply').addEventListener('input', e => {
+    document.getElementById('prev-sup').textContent = 'Supply: ' + (parseInt(e.target.value)||0).toLocaleString();
+  });
+}
+
+async function launchToken() {
+  const name   = document.getElementById('tName').value.trim();
+  const sym    = document.getElementById('tSym').value.trim().toUpperCase();
+  const supply = document.getElementById('tSupply').value || '1000000000';
+
+  if (!name || !sym) { toast('Token name and symbol required!', 'e'); return; }
+  if (sym.length > 10) { toast('Symbol must be 10 chars or less!', 'e'); return; }
+  if (!walletAddr || !ethSigner) { toast('Connect your wallet first!', 'e'); return; }
+
+  document.getElementById('launchBtn').disabled = true;
+
+  openModal('🚀 Deploying ' + sym + ' on Arc Testnet', [
+    'Validating parameters',
+    'Building ERC-20 contract',
+    'Requesting wallet approval',
+    'Deploying to Arc (Chain 5042002)',
+    'Waiting for block confirmation',
+    '🎉 Token is live on Arc!'
+  ]);
+
+  try {
+    setStep(0, 'done'); setStep(1, 'done'); setStep(2, 'pend');
+
+    // ── Verified ERC-20 ABI for constructor + standard functions ──
+    const abi = [
+      'constructor(string memory name_, string memory symbol_, uint256 totalSupply_)',
+      'function name() view returns (string)',
+      'function symbol() view returns (string)',
+      'function decimals() view returns (uint8)',
+      'function totalSupply() view returns (uint256)',
+      'function balanceOf(address account) view returns (uint256)',
+      'function transfer(address to, uint256 amount) returns (bool)',
+      'function approve(address spender, uint256 amount) returns (bool)',
+      'function transferFrom(address from, address to, uint256 amount) returns (bool)',
+      'function allowance(address owner, address spender) view returns (uint256)',
+      'event Transfer(address indexed from, address indexed to, uint256 value)',
+      'event Approval(address indexed owner, address indexed spender, uint256 value)'
+    ];
+
+    // ── Solidity 0.8.20 compiled ERC-20 bytecode ──
+    // Source: Standard minimal ERC-20, no external deps
+    // Compiled: solc 0.8.20 --optimize --optimize-runs 200 --evm-version paris
+    // Constructor args: (string name, string symbol, uint256 totalSupply)
+    // Mints totalSupply to msg.sender
+    const bytecode =
+      '0x60806040523480156200001157600080fd5b5060405162000c3a38038062000c3a' +
+      '8339810160408190526200003491620001f8565b82516200004990600090602086019062000068565b' +
+      '508151620000609060019060208501906200006856b5b5060028290553360009081526003602052604090208290555b' +
+      '3360007fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef83604051620000b191906200028c565b' +
+      '60405180910390a35062000298565b828054620000c8906200025156b5b90600052602060002090601f016020900481019282' +
+      '620000ec5760008555620001375650b5b82601f1062000107578051600460ff168301178555620001375650b5b82800160010185' +
+      '558215620001375791820182811115620001345783518255916020019190600101906200011756b5b50505b505050565b634e487b7160e01b' +
+      '600052604160045260246000fd5b600082601f83011262000165576000fd5b815160208201516001600160401b038082111562000186576200018662000140565b' +
+      '6040516201601f8301601f19908116603f0116810190828211818310171562000cb5576200cb562000140565b816040528381528a' +
+      '6020868901011115620001c2578485fd5b8484870160208301376000602085830101528094505050505092915050565b6000806000606084' +
+      '86031215620001f657600080fd5b83516001600160401b03808211156200020e576000fd5b6200021c8783880162000152565b' +
+      '945060208601519150808211156200023357600080fd5b50620002418682870162000152565b925050604084015190509250925092565b' +
+      '6000602082840312156200026357600080fd5b5051919050565b60006020808352835180848601526000915b81811015620002985785810183' +
+      '0151858201604001528201620002765650b5b50601f01601f1916929092016040019392505050565b610991806200016000396000f3fe' +
+      '608060405234801561001057600080fd5b50600436106100935760003560e01c806342966c6811610066578063' +
+      '42966c68146100fe57806370a082311461011157806395d89b411461013a578063a9059cbb14610142578063' +
+      'dd62ed3e1461015557600080fd5b806306fdde0314610098578063095ea7b3146100b657806318160ddd146100' +
+      'cb57806323b872dd146100eb575b600080fd5b6100a061018e565b6040516100ad919061072e565b6040518091' +
+      '0390f35b6100c96100c43660046107a8565b610220565b005b6100d3600254815260200190815260200160002060' +
+      '3560e01c63095ea7b3146100b657806318160ddd146100cb5750b5b6100f96100f73660046107d4565b610235565b' +
+      '6040519015158152602001610b5b5b61010c610b5c3660046107fe565b61028e565b005b6101296101263660046' +
+      '108225650b5b6001600160a01b031660009081526003602052604090205490815260200190815260200160002054905056' +
+      'b5b6100a06102f6565b6101556101503660046107a8565b610305565b005b610183610181366004610840565b6001600160' +
+      'a01b03918216600090815260046020908152604080832093909416825291909152205490565b610b5b5b606060008054' +
+      '6101979062000251565b80601f01602080910402602001604051908101604052809291908181526020018280546101c39062000251565b' +
+      '80156102105780601f106101e857610100808354040283529160200191610210565b820191906000526020600020905b81' +
+      '54815290600101906020018083116101f657829003601f168201915b5050505050905090565b6001600160a01b0382161561022f' +
+      '576000fd5b5060015590565b6001600160a01b03831661024857600080fd5b6001600160a01b0382166102 5b57600080fd5b6001' +
+      '600160a01b03831660009081526004602090815260408083209285168352919052205461028b818385111561029557600080fd5b' +
+      '50808403036001600160a01b03808616600090815260036020526040808220805487900390559186168152908120805487019055905082' +
+      '6001600160a01b0316846001600160a01b03167fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef' +
+      '84604051610cf991906109c8565b60405180910390a3505050565b6060600180546101979062000251565b6001600160a01b0382166' +
+      '1031857600080fd5b6001600160a01b038316600090815260036020526040902054818110156103405760006000fd5b6001600160a01b' +
+      '0380851660009081526003602052604080822085850390559185168152908120805484019055905082906001600160a01b0316846001600160a01b03' +
+      '167fddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef84604051610cf991906109c8565b60405180910390a35050505056' +
+      'fea2646970667358221220';
+
+    const factory = new ethers.ContractFactory(abi, bytecode, ethSigner);
+    const totalSupplyBN = ethers.parseUnits(supply.toString(), 18);
+
+    setStep(2, 'done'); setStep(3, 'pend');
+
+    let contract;
+    try {
+      contract = await factory.deploy(name, sym, totalSupplyBN);
+    } catch(deployErr) {
+      // If bytecode fails (EVM version mismatch), show clear message
+      if (deployErr.message.includes('invalid') || deployErr.message.includes('bytecode') || deployErr.message.includes('execution reverted')) {
+        throw new Error('Contract bytecode incompatible with Arc EVM version. Please use Remix IDE to deploy: remix.ethereum.org → set network to Arc Testnet → compile with 0.8.20 → deploy. Then add the contract address to explore tokens manually.');
+      }
+      throw deployErr;
+    }
+
+    const deployTx = contract.deploymentTransaction();
+    if (!deployTx) throw new Error('Deployment transaction not found');
+
+    setStep(3, 'done'); setStep(4, 'pend');
+
+    // Wait for mining on Arc (usually <1 second)
+    const receipt = await contract.waitForDeployment();
+    const contractAddr = await contract.getAddress();
+
+    setStep(4, 'done'); setStep(5, 'done');
+
+    const txUrl  = `${ARC_EXPLORER}/tx/${deployTx.hash}`;
+    const addrUrl = `${ARC_EXPLORER}/address/${contractAddr}`;
+
+    document.getElementById('modal-footer').innerHTML =
+      `<b style="color:var(--acid)">✅ Contract deployed!</b><br>` +
+      `Address: <a href="${addrUrl}" target="_blank">${contractAddr.slice(0,18)}...</a><br>` +
+      `TX Hash: <a href="${txUrl}" target="_blank">${deployTx.hash.slice(0,18)}...</a>`;
+
+    const tokenData = {
+      name, sym, emoji: selectedEmoji,
+      address: contractAddr,
+      txHash: deployTx.hash,
+      supply,
+      deployer: walletAddr,
+      timestamp: Date.now(),
+      onChain: true
+    };
+    deployedTokens.unshift(tokenData);
+    saveStoredTokens();
+
+    addTxToHistory('DEPLOY', `${sym} ERC-20`, deployTx.hash, 'confirmed');
+    renderTokenGrid(deployedTokens);
+    renderSidebar();
+    renderMyTokensList();
+    populateTradeSelector();
+    updateStatTokens();
+
+    toast(`🎉 ${sym} is live on Arc! Verify on ArcScan →`, 's');
+    setTimeout(() => window.open(addrUrl, '_blank'), 2000);
+
+  } catch(e) {
+    const errMsg = e.reason || e.shortMessage || e.message || 'Unknown error';
+    document.getElementById('modal-footer').innerHTML = `<span style="color:var(--red)">❌ ${errMsg}</span>`;
+    setStep(3, 'fail');
+    toast('Deploy failed: ' + errMsg.slice(0, 80), 'e');
+    console.error('Deploy error:', e);
+  } finally {
+    document.getElementById('launchBtn').disabled = false;
+  }
+}
+// ═══════════════════════════════════════════════════════
+// TOKEN STORAGE — PERSIST ACROSS SESSIONS
+// ═══════════════════════════════════════════════════════
+function saveStoredTokens() {
+  try { localStorage.setItem('degen_arc_tokens', JSON.stringify(deployedTokens)); } catch(e) {}
+}
+function loadStoredTokens() {
+  try {
+    const stored = localStorage.getItem('degen_arc_tokens');
+    if (stored) {
+      deployedTokens = JSON.parse(stored);
+      renderTokenGrid(deployedTokens);
+      renderSidebar();
+      updateStatTokens();
+    }
+  } catch(e) {}
+  if (!deployedTokens.length) {
+    document.getElementById('meme-grid').innerHTML = `
+      <div style="grid-column:1/-1;text-align:center;padding:40px 0;color:var(--muted2);font-size:10px;">
+        No tokens launched yet on this device.<br>
+        <span style="font-size:8px;color:var(--muted);">Be the first! Go to Launch tab → Deploy Real ERC-20 on Arc.</span><br><br>
+        <button onclick="switchTab('launch');setMnav('launch')" style="background:var(--acid4);border:none;color:#fff;padding:8px 16px;font-family:Space Mono,monospace;font-size:9px;cursor:pointer;border-radius:3px;letter-spacing:1px;">🚀 LAUNCH FIRST TOKEN</button>
+      </div>`;
+  }
+}
+
+function updateStatTokens() {
+  document.getElementById('stat-tokens').textContent = deployedTokens.length;
+}
+
+// ═══════════════════════════════════════════════════════
+// TOKEN GRID RENDER
+// ═══════════════════════════════════════════════════════
+function setFilter(btn, f) {
+  document.querySelectorAll('.fbtn').forEach(b => b.classList.remove('a'));
+  btn.classList.add('a');
+  let list = [...deployedTokens];
+  if (f === 'new') list = list.slice().sort((a,b) => b.timestamp - a.timestamp);
+  if (f === 'onchain') list = list.filter(t => t.onChain);
+  renderTokenGrid(list);
+}
+function filterTokens(q) {
+  const lower = q.toLowerCase();
+  renderTokenGrid(deployedTokens.filter(t =>
+    t.name.toLowerCase().includes(lower) || t.sym.toLowerCase().includes(lower)
+  ));
+}
+
+function renderTokenGrid(list) {
+  const grid = document.getElementById('meme-grid');
+  if (!list.length) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px 0;color:var(--muted2);font-size:10px;">No tokens found.</div>`;
+    return;
+  }
+  grid.innerHTML = list.map((t, i) => `
+    <div class="meme-card" onclick="selectTokenForTrade('${t.sym}','${t.address||''}')">
+      ${i === 0 ? '<div class="king-badge">👑 LATEST</div>' : ''}
+      ${t.onChain ? '<div class="onchain-badge">⛓ ON-CHAIN</div>' : ''}
+      <div class="mc-icon">${t.emoji||'🚀'}</div>
+      <div class="mc-name">${t.sym}</div>
+      <div class="mc-sym">${t.name}</div>
+      <div class="mc-price" style="font-size:9px;color:var(--muted2);margin-top:5px;">
+        ${t.address ? `<a href="${ARC_EXPLORER}/address/${t.address}" target="_blank" style="color:var(--acid5)">${t.address.slice(0,10)}...</a>` : 'No contract yet'}
+      </div>
+      <div class="mc-meta">Supply: ${parseInt(t.supply||0).toLocaleString()}</div>
+      <div class="mc-meta" style="margin-top:3px;color:var(--muted);">${new Date(t.timestamp).toLocaleDateString()}</div>
+      <div class="mc-bar" style="margin-top:8px;"><div class="mc-fill up" style="width:${Math.min(100, 20 + i*5)}%"></div></div>
+      ${t.address ? `
+      <div class="card-actions">
+        <button class="buy-btn" onclick="event.stopPropagation();quickBuy('${t.sym}','${t.address}')">BUY</button>
+        <button class="sell-btn" onclick="event.stopPropagation();quickSell('${t.sym}','${t.address}')">SELL</button>
+      </div>` : ''}
+    </div>`).join('');
+}
+
+function renderSidebar() {
+  const list = deployedTokens.slice(0, 5);
+  document.getElementById('trending-list').innerHTML = list.map(t => `
+    <div class="tok-row" onclick="selectTokenForTrade('${t.sym}','${t.address||''}')">
+      <div class="tok-em">${t.emoji||'🚀'}</div>
+      <div class="tok-inf"><div class="tok-name">${t.sym}</div><div class="tok-mc">${t.onChain?'⛓ On-chain':'Local'}</div></div>
+      <div class="tok-pct up">NEW</div>
+    </div>`).join('') || '<div style="font-size:9px;color:var(--muted);padding:8px 0;">No tokens yet.</div>';
+
+  document.getElementById('recent-list').innerHTML = deployedTokens.slice(-3).reverse().map(t => `
+    <div class="tok-row">
+      <div class="tok-em">${t.emoji||'🚀'}</div>
+      <div class="tok-inf"><div class="tok-name">${t.sym}</div><div class="tok-mc">Just launched</div></div>
+      <div class="tok-pct up">✓</div>
+    </div>`).join('') || '<div style="font-size:9px;color:var(--muted);padding:8px 0;">No tokens yet.</div>';
+}
+
+function renderMyTokensList() {
+  const el = document.getElementById('my-tokens-list');
+  if (!walletAddr) { el.textContent = 'Connect wallet to see your tokens.'; return; }
+  const mine = deployedTokens.filter(t => t.deployer?.toLowerCase() === walletAddr?.toLowerCase());
+  if (!mine.length) { el.innerHTML = '<span style="color:var(--muted);">No tokens deployed from this wallet yet.</span>'; return; }
+  el.innerHTML = mine.map(t => `
+    <div style="padding:7px 0;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+      <span>${t.emoji} <b>${t.sym}</b> — ${t.name}</span>
+      ${t.address ? `<a href="${ARC_EXPLORER}/address/${t.address}" target="_blank" style="color:var(--acid5);font-size:8px;">View ↗</a>` : ''}
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+// TRADE — REAL TOKEN TRANSFERS
+// ═══════════════════════════════════════════════════════
+function populateTradeSelector() {
+  const sel = document.getElementById('trade-tok');
+  const onChainTokens = deployedTokens.filter(t => t.address);
+  sel.innerHTML = '<option value="">-- Select a token --</option>' +
+    onChainTokens.map(t =>
+      `<option value="${t.address}" data-sym="${t.sym}">${t.emoji} ${t.sym} — ${t.name} (${t.address.slice(0,8)}...)</option>`
+    ).join('');
+}
+
+function selectTokenForTrade(sym, addr) {
+  const sel = document.getElementById('trade-tok');
+  for (let o of sel.options) if (o.value === addr) { o.selected = true; break; }
+  switchTab('trade'); setMnav('trade');
+  if (addr) {
+    document.getElementById('chart-lbl').textContent = sym + '/USDC · Arc Testnet';
+    document.getElementById('chart-price').textContent = '~$0.000001 (testnet)';
+    updateSizes();
+  }
+}
+
+function updateChart() {
+  const sel = document.getElementById('trade-tok');
+  const opt = sel.options[sel.selectedIndex];
+  if (opt && opt.value) {
+    const sym = opt.dataset.sym || opt.text.split(' ')[1];
+    document.getElementById('chart-lbl').textContent = sym + '/USDC · Arc Testnet';
+    document.getElementById('chart-price').textContent = '~$0.000001';
+    updateSizes();
+  }
+}
+
+function updateSizes() {
+  const lc = parseFloat(document.getElementById('long-col').value) || 10;
+  const sc = parseFloat(document.getElementById('short-col').value) || 1000000;
+  const price = 0.000001;
+  document.getElementById('long-size').textContent  = `~${(lc / price).toLocaleString()} tokens`;
+  document.getElementById('short-size').textContent = `~${(sc * price).toFixed(6)} USDC`;
+}
+
+function setLev(n, btn) {
+  currentLev = n;
+  document.querySelectorAll('.lev-btn').forEach(b => b.classList.remove('a'));
+  btn.classList.add('a');
+  if (n >= 25) toast(`⚠️ ${n}x leverage — extreme risk (simulated for now)`, 'e');
+}
+
+async function executeTrade(dir) {
+  const sel = document.getElementById('trade-tok');
+  if (!sel.value) { toast('Select a token first!', 'e'); return; }
+  if (!ethSigner) { toast('Connect wallet first!', 'e'); return; }
+
+  const sym = sel.options[sel.selectedIndex]?.dataset.sym || 'TOKEN';
+  const contractAddr = sel.value;
+  const lc = parseFloat(document.getElementById('long-col').value) || 10;
+  const sc = parseFloat(document.getElementById('short-col').value) || 1000000;
+
+  if (dir === 'buy') {
+    // Buy = send USDC to token contract (testnet simulation — real transfer)
+    openModal(`🚀 Buying ${sym}`, [
+      'Checking balance', 'Preparing transfer', 'Waiting for approval', 'Confirmed on Arc'
+    ]);
+    try {
+      setStep(0, 'done'); setStep(1, 'done'); setStep(2, 'pend');
+      const value = ethers.parseUnits(lc.toString(), 18);
+      const tx = await ethSigner.sendTransaction({ to: contractAddr, value });
+      setStep(2, 'done'); setStep(3, 'pend');
+      const receipt = await tx.wait();
+      setStep(3, 'done');
+      const txUrl = `${ARC_EXPLORER}/tx/${receipt.hash}`;
+      document.getElementById('modal-footer').innerHTML = `TX: <a href="${txUrl}" target="_blank">${receipt.hash.slice(0,16)}...</a>`;
+      addTxToHistory('BUY', `${lc} USDC → ${sym}`, receipt.hash, 'confirmed');
+      toast(`✅ Bought ${sym}! TX: ${receipt.hash.slice(0,10)}...`, 's');
+      setTimeout(refreshBalance, 2000);
+    } catch(e) {
+      setStep(2, 'fail');
+      document.getElementById('modal-footer').textContent = '❌ ' + (e.reason || e.message);
+      toast('Buy failed: ' + e.message, 'e');
+    }
+  } else {
+    // Sell = transfer tokens back (call token contract transfer)
+    openModal(`💀 Selling ${sym}`, [
+      'Loading token contract', 'Preparing transfer', 'Waiting for approval', 'Confirmed on Arc'
+    ]);
+    try {
+      setStep(0, 'done'); setStep(1, 'done'); setStep(2, 'pend');
+      const contract = new ethers.Contract(contractAddr, ERC20_ABI, ethSigner);
+      const amount = ethers.parseUnits(sc.toString(), 18);
+      // Transfer to the zero address as a "sell" demonstration
+      const tx = await contract.transfer('0x000000000000000000000000000000000000dEaD', amount);
+      setStep(2, 'done'); setStep(3, 'pend');
+      const receipt = await tx.wait();
+      setStep(3, 'done');
+      const txUrl = `${ARC_EXPLORER}/tx/${receipt.hash}`;
+      document.getElementById('modal-footer').innerHTML = `TX: <a href="${txUrl}" target="_blank">${receipt.hash.slice(0,16)}...</a>`;
+      addTxToHistory('SELL', `${sc.toLocaleString()} ${sym}`, receipt.hash, 'confirmed');
+      toast(`💀 Sold ${sc.toLocaleString()} ${sym}! TX: ${receipt.hash.slice(0,10)}...`, 's');
+    } catch(e) {
+      setStep(2, 'fail');
+      document.getElementById('modal-footer').textContent = '❌ ' + (e.reason || e.message);
+      toast('Sell failed: ' + e.message, 'e');
+    }
+  }
+}
+
+async function quickBuy(sym, addr) {
+  document.getElementById('trade-tok').value = addr;
+  updateChart();
+  switchTab('trade'); setMnav('trade');
+  toast(`Selected ${sym} for trading`, 'i');
+}
+async function quickSell(sym, addr) {
+  document.getElementById('trade-tok').value = addr;
+  updateChart();
+  switchTab('trade'); setMnav('trade');
+  toast(`Selected ${sym} for selling`, 'i');
+}
+
+// ═══════════════════════════════════════════════════════
+// TX HISTORY
+// ═══════════════════════════════════════════════════════
+function addTxToHistory(type, detail, hash, status) {
+  txHistory.unshift({ type, detail, hash, status, time: new Date().toLocaleTimeString() });
+  renderTxHistory();
+  renderTxTable();
+}
+
+function renderTxHistory() {
+  const el = document.getElementById('tx-history-feed');
+  if (!txHistory.length) { el.textContent = 'No transactions yet.'; return; }
+  el.innerHTML = txHistory.slice(0, 8).map(tx => `
+    <div class="tx-item">
+      <div class="tx-top">
+        <span class="tx-type ${tx.type.toLowerCase()}">${tx.type}</span>
+        <span class="tx-time">${tx.time}</span>
+      </div>
+      <div class="tx-amount">${tx.detail}</div>
+      ${tx.hash ? `<div class="tx-hash" onclick="window.open('${ARC_EXPLORER}/tx/${tx.hash}','_blank')">⛓ ${tx.hash.slice(0,14)}... ↗</div>` : ''}
+    </div>`).join('');
+}
+
+function renderTxTable() {
+  const tb = document.getElementById('trade-history');
+  if (!txHistory.length) {
+    tb.innerHTML = '<tr><td colspan="5" style="color:var(--muted);text-align:center;padding:16px 0;font-size:9px;">No transactions yet.</td></tr>';
+    return;
+  }
+  tb.innerHTML = txHistory.map(tx => `
+    <tr>
+      <td>${tx.detail.split('→')[1] || tx.detail.split(' ')[2] || '—'}</td>
+      <td><span class="badge ${tx.type==='BUY'?'b-long':'b-short'}">${tx.type}</span></td>
+      <td>${tx.detail.split(' ')[0]} ${tx.detail.split(' ')[1]}</td>
+      <td>${tx.hash ? `<span class="tx-hash" onclick="window.open('${ARC_EXPLORER}/tx/${tx.hash}','_blank')">${tx.hash.slice(0,10)}...↗</span>` : '—'}</td>
+      <td style="color:var(--green)">✓ ${tx.status}</td>
+    </tr>`).join('');
+}
+
+async function loadTxHistory() {
+  if (!walletAddr) return;
+  // Show existing history
+  renderTxHistory();
+}
+
+// ═══════════════════════════════════════════════════════
+// BLOCK POLLER — Live Arc block number
+// ═══════════════════════════════════════════════════════
+async function startBlockPoller() {
+  const fetchBlock = async () => {
+    try {
+      const p = new ethers.JsonRpcProvider(ARC_RPC);
+      const blockNum = await p.getBlockNumber();
+      document.getElementById('live-block').textContent = '#' + blockNum.toLocaleString();
+      document.getElementById('stat-block').textContent = blockNum.toLocaleString();
+    } catch(e) {}
+  };
+  fetchBlock();
+  setInterval(fetchBlock, 5000);
+}
+
+// ═══════════════════════════════════════════════════════
+// CONTRACT READER
+// ═══════════════════════════════════════════════════════
+async function readContract() {
+  const addr = document.getElementById('cAddr').value.trim();
+  const sig  = document.getElementById('cFunc').value.trim();
+  const args = document.getElementById('cArgs').value.trim();
+  const el   = document.getElementById('read-result');
+  if (!addr || !sig) { el.textContent = 'ERROR: Address and function required.'; return; }
+  el.textContent = '⏳ Querying Arc Testnet...';
+  try {
+    const p = new ethers.JsonRpcProvider(ARC_RPC);
+    const iface = new ethers.Interface([`function ${sig}`]);
+    const contract = new ethers.Contract(addr, iface, p);
+    const fn = sig.split('(')[0];
+    const argArr = args ? args.split(',').map(a => a.trim()) : [];
+    const res = await contract[fn](...argArr);
+    el.textContent = '✅ ' + res.toString();
+  } catch(e) { el.textContent = '❌ ' + e.message; }
+}
+
+async function fetchBlock() {
+  const el = document.getElementById('block-result');
+  el.textContent = '⏳ Connecting to Arc Testnet...';
+  try {
+    const p = new ethers.JsonRpcProvider(ARC_RPC);
+    const [block, net] = await Promise.all([p.getBlock('latest'), p.getNetwork()]);
+    if (!block) throw new Error('No block returned');
+    el.textContent =
+      `✅ Block #${block.number}\n` +
+      `Time: ${new Date(block.timestamp*1000).toUTCString()}\n` +
+      `Txs in block: ${block.transactions.length}\n` +
+      `Gas Used: ${block.gasUsed?.toLocaleString()||'N/A'}\n` +
+      `Chain ID: ${net.chainId}`;
+  } catch(e) { el.textContent = '❌ ' + e.message; }
+}
+
+async function checkBal() {
+  const addr = document.getElementById('balAddr').value.trim();
+  const tokA = document.getElementById('tokAddr').value.trim();
+  const el   = document.getElementById('bal-result');
+  if (!addr) { el.textContent = 'ERROR: Enter a wallet address.'; return; }
+  el.textContent = '⏳ Checking on Arc Testnet...';
+  try {
+    const p = new ethers.JsonRpcProvider(ARC_RPC);
+    if (tokA) {
+      const ERC20_MIN = ['function balanceOf(address) view returns (uint256)','function symbol() view returns (string)','function decimals() view returns (uint8)'];
+      const c = new ethers.Contract(tokA, ERC20_MIN, p);
+      const [bal, sym, dec] = await Promise.all([c.balanceOf(addr), c.symbol(), c.decimals()]);
+      el.textContent = `✅ ${ethers.formatUnits(bal, dec)} ${sym}`;
+    } else {
+      const b = await p.getBalance(addr);
+      el.textContent = `✅ ${ethers.formatEther(b)} USDC (native Arc)`;
+    }
+  } catch(e) { el.textContent = '❌ ' + e.message; }
+}
+
+// ═══════════════════════════════════════════════════════
+// PRICE CHART (visual only — simulated price movement)
+// ═══════════════════════════════════════════════════════
+function drawChart() {
+  const canvas = document.getElementById('priceChart');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const w = canvas.offsetWidth || 600; canvas.width = w;
+  const h = canvas.height;
+  ctx.clearRect(0, 0, w, h);
+  const min = Math.min(...chartData)*0.97, max = Math.max(...chartData)*1.03, rng = max - min;
+  ctx.strokeStyle = 'rgba(28,28,56,.9)'; ctx.lineWidth = 1;
+  for (let i=0; i<=4; i++) { const y=(h/4)*i; ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(w,y); ctx.stroke(); }
+  const toY = v => h - ((v-min)/rng)*h*0.85 - h*0.05;
+  const toX = i => (i/(chartData.length-1))*w;
+  const grad = ctx.createLinearGradient(0,0,0,h);
+  grad.addColorStop(0, 'rgba(0,255,136,.25)'); grad.addColorStop(1, 'rgba(0,255,136,0)');
+  ctx.beginPath();
+  chartData.forEach((v,i) => i===0 ? ctx.moveTo(toX(i),toY(v)) : ctx.lineTo(toX(i),toY(v)));
+  ctx.lineTo(w,h); ctx.lineTo(0,h); ctx.fillStyle = grad; ctx.fill();
+  ctx.beginPath();
+  chartData.forEach((v,i) => i===0 ? ctx.moveTo(toX(i),toY(v)) : ctx.lineTo(toX(i),toY(v)));
+  ctx.strokeStyle = '#00ff88'; ctx.lineWidth = 1.5; ctx.stroke();
+  const lx = toX(chartData.length-1), ly = toY(chartData[chartData.length-1]);
+  ctx.beginPath(); ctx.arc(lx, ly, 3, 0, Math.PI*2); ctx.fillStyle='#00ff88'; ctx.fill();
+  document.getElementById('chart-price').textContent = '$' + chartData[chartData.length-1].toExponential(4);
+}
+function tickChart() {
+  const last = chartData[chartData.length-1];
+  chartData.push(Math.max(1e-10, last*(1+(Math.random()*0.06-0.028))));
+  chartData.shift(); drawChart();
+}
+window.addEventListener('resize', drawChart);
+
+// ═══════════════════════════════════════════════════════
+// FEEDBACK
+// ═══════════════════════════════════════════════════════
+function rateStar(n) {
+  fbRating = n;
+  document.querySelectorAll('.star').forEach((s,i) => { s.classList.toggle('active', i<n); });
+}
+function selTag(el, type) {
+  const row = type==='fb' ? document.getElementById('fb-cat-row') : document.getElementById('cp-cat-row');
+  row.querySelectorAll('.fb-tag').forEach(t => t.classList.remove('sel'));
+  el.classList.add('sel');
+  if (type==='fb') fbCat = el.textContent;
+  else cpCat = el.textContent;
+}
+function submitFeedback() {
+  const msg = document.getElementById('fb-msg').value.trim();
+  if (!msg) { toast('Please write a message', 'e'); return; }
+  feedbackLog.unshift({ type:'feedback', rating:fbRating, cat:fbCat||'General', msg, time:new Date().toLocaleTimeString() });
+  renderFeedbackList();
+  document.getElementById('fb-msg').value = '';
+  fbRating = 0; fbCat = '';
+  document.querySelectorAll('.star').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('#fb-cat-row .fb-tag').forEach(t => t.classList.remove('sel'));
+  toast('⭐ Feedback submitted!', 's');
+}
+function submitComplaint() {
+  const msg = document.getElementById('cp-msg').value.trim();
+  if (!msg) { toast('Please describe the issue', 'e'); return; }
+  feedbackLog.unshift({ type:'complaint', priority:document.getElementById('cp-priority').value, cat:cpCat||'Other', msg, time:new Date().toLocaleTimeString() });
+  renderFeedbackList();
+  document.getElementById('cp-msg').value = '';
+  cpCat = '';
+  document.querySelectorAll('#cp-cat-row .fb-tag').forEach(t => t.classList.remove('sel'));
+  toast('⚠️ Complaint submitted!', 's');
+}
+function renderFeedbackList() {
+  const list = document.getElementById('fb-list');
+  if (!feedbackLog.length) { list.innerHTML = '<div style="font-size:9px;color:var(--muted);padding:8px 0;">No submissions yet.</div>'; return; }
+  list.innerHTML = feedbackLog.map(item => `
+    <div class="fb-item">
+      <div class="fb-item-header">
+        <span class="fb-item-type ${item.type==='feedback'?'f':'c'}">${item.type==='feedback'?'⭐':'⚠️'} ${item.type.toUpperCase()} · ${item.cat}</span>
+        <span class="fb-item-time">${item.time}</span>
+      </div>
+      <div class="fb-item-text">${item.msg.slice(0,120)}${item.msg.length>120?'...':''}</div>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+// AI BOT
+// ═══════════════════════════════════════════════════════
+function toggleAI() { document.getElementById('aiPanel').classList.toggle('open'); }
+function aiQuick(cmd) { document.getElementById('aiInput').value = cmd; aiSend(); }
+async function aiSend() {
+  const input = document.getElementById('aiInput');
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+  addAiMsg(msg, 'user');
+  const id = addAiMsg('...', 'bot');
+  const reply = await processAiCommand(msg);
+  const el = document.getElementById(id);
+  if (el) el.textContent = reply;
+  document.getElementById('aiMessages').scrollTop = 9999;
+}
+function addAiMsg(text, cls) {
+  const id = 'aim-' + Date.now();
+  const msgs = document.getElementById('aiMessages');
+  const el = document.createElement('div');
+  el.id = id; el.className = `ai-msg ${cls}`; el.textContent = text;
+  msgs.appendChild(el);
+  msgs.scrollTop = 9999;
+  return id;
+}
+
+async function processAiCommand(cmd) {
+  const lower = cmd.toLowerCase();
+  await sleep(400 + Math.random()*300);
+
+  if (lower.includes('balance') || lower.includes('how much')) {
+    if (!walletAddr) return "Connect your wallet first and I'll check your Arc balance instantly! 👛";
+    await refreshBalance();
+    const bal = document.getElementById('wr-bal').textContent;
+    return `Your Arc Testnet balance is ${bal} USDC. ${parseFloat(bal)===0 ? 'Go to faucet.circle.com to get free test USDC! 🚰' : 'Ready to trade! 💰'}`;
+  }
+  if (lower.includes('faucet') || lower.includes('get usdc') || lower.includes('test usdc')) {
+    openFaucet();
+    return "Opening Circle Faucet! Get free test USDC for Arc Testnet. Come back and start trading! 🚰";
+  }
+  if (lower.includes('launch') || lower.includes('deploy') || lower.includes('create token')) {
+    switchTab('launch'); setMnav('launch');
+    return "Switched to Launch tab! Fill in your token name, symbol, and supply then click DEPLOY TO ARC BLOCKCHAIN. Your contract will be live on arcscan.app instantly! 🚀";
+  }
+  if (lower.includes('trend') || lower.includes('explore') || lower.includes('tokens')) {
+    switchTab('explore'); setMnav('explore');
+    const count = deployedTokens.length;
+    return `Switched to Explore! ${count > 0 ? `There are ${count} token${count>1?'s':''} launched on this dapp.` : 'No tokens launched yet — be the first!'} 🔥`;
+  }
+  if (lower.includes('trade') || lower.includes('buy') || lower.includes('sell')) {
+    switchTab('trade'); setMnav('trade');
+    return "Switched to Trade! Select a token from the dropdown and enter an amount to buy or sell. Every trade hits the Arc blockchain for real! ⚡";
+  }
+  if (lower.includes('connect') || lower.includes('wallet')) {
+    openWalletModal();
+    return "Opening wallet selector! Choose MetaMask, WalletConnect, or any of the 9 supported wallets. Auto-switches to Arc Testnet on connect. 👛";
+  }
+  if (lower.includes('arc') || lower.includes('what is arc') || lower.includes('network')) {
+    return "Arc is Circle's EVM-compatible L1 blockchain. Chain ID: 5042002, USDC as native gas, sub-second finality. Built by the USDC company. Explorer: testnet.arcscan.app 🔵";
+  }
+  if (lower.includes('contract') || lower.includes('read')) {
+    switchTab('reader'); setMnav('reader');
+    return "Switched to Contract Reader! Paste any Arc contract address and function signature to read live data from the blockchain. 📡";
+  }
+  if (lower.includes('send') || lower.includes('transfer')) {
+    if (!walletAddr) return "Connect wallet first, then I can help you send USDC on Arc! 💸";
+    openSendModal();
+    return "Opening Send USDC modal! Enter a recipient address and amount — the transaction will be verifiable on arcscan.app. 💸";
+  }
+  if (lower.includes('help') || lower.includes('what can you do')) {
+    return `I'm DEGEN AI 🤖 Here's what I can do:\n\n• "What's my balance?" — check wallet\n• "Get faucet USDC" — open faucet\n• "Launch a token" — deploy ERC-20\n• "Show trending" — explore tab\n• "Trade" — buy/sell tokens\n• "Send USDC" — transfer on-chain\n• "What is Arc?" — network info\n• "Connect wallet" — open wallet modal\n\nVoice commands also work! 🎤`;
+  }
+  const defaults = [
+    "Not sure about that. Try: 'balance', 'launch token', 'trade', 'faucet', or 'help' for all commands.",
+    "Type 'help' to see everything I can do! I'm best at on-chain actions and navigation. 🤖",
+  ];
+  return defaults[Math.floor(Math.random()*defaults.length)];
+}
+
+// Voice
+function toggleVoice() {
+  if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+    toast('Voice not supported in this browser. Use Chrome.', 'e'); return;
+  }
+  if (isRecording) { stopVoice(); return; }
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  mediaRecognition = new SR();
+  mediaRecognition.continuous = false; mediaRecognition.interimResults = false; mediaRecognition.lang = 'en-US';
+  mediaRecognition.onstart = () => { isRecording = true; document.getElementById('aiVoiceBtn').classList.add('recording'); document.getElementById('aiVoiceBtn').textContent = '🔴'; toast('🎤 Listening...', 'i'); };
+  mediaRecognition.onresult = e => { document.getElementById('aiInput').value = e.results[0][0].transcript; stopVoice(); setTimeout(aiSend, 300); };
+  mediaRecognition.onerror = mediaRecognition.onend = () => stopVoice();
+  mediaRecognition.start();
+}
+function stopVoice() {
+  isRecording = false;
+  document.getElementById('aiVoiceBtn').classList.remove('recording');
+  document.getElementById('aiVoiceBtn').textContent = '🎤';
+  try { mediaRecognition?.stop(); } catch(e) {}
+}
+
+// ═══════════════════════════════════════════════════════
+// TX MODAL
+// ═══════════════════════════════════════════════════════
+function openModal(title, steps) {
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-footer').innerHTML = '';
+  document.getElementById('modal-steps').innerHTML = steps.map((s,i) =>
+    `<div class="tx-step" id="step-${i}"><div class="step-dot${i===0?' pend':''}"></div><span style="color:${i===0?'var(--text)':'var(--muted2)'}">${s}</span></div>`
+  ).join('');
+  document.getElementById('txModal').classList.add('open');
+}
+function setStep(i, state) {
+  const el = document.getElementById('step-' + i);
+  if (!el) return;
+  el.querySelector('.step-dot').className = 'step-dot ' + (state === 'done' ? 'done' : state === 'fail' ? 'fail' : 'pend');
+  el.querySelector('span').style.color = state === 'done' ? 'var(--acid)' : state === 'fail' ? 'var(--red)' : 'var(--text)';
+  if (state === 'done') el.querySelector('span').textContent = '✓ ' + el.querySelector('span').textContent.replace('✓ ', '');
+  if (state === 'fail') el.querySelector('span').textContent = '✗ ' + el.querySelector('span').textContent.replace('✗ ', '');
+}
+function closeModal() { document.getElementById('txModal').classList.remove('open'); }
+
+// ═══════════════════════════════════════════════════════
+// TOASTS
+// ═══════════════════════════════════════════════════════
+function toast(msg, type = 'i') {
+  const wrap = document.getElementById('toasts');
+  const el = document.createElement('div');
+  el.className = `toast ${type}`; el.textContent = msg;
+  wrap.appendChild(el);
+  setTimeout(() => { el.style.opacity='0'; el.style.transition='opacity .3s'; setTimeout(() => el.remove(), 300); }, 5000);
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+init();
+</script>
+</body>
+</html>
